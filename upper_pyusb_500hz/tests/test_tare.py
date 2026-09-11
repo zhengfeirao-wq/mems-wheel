@@ -180,3 +180,70 @@ def test_old_name_still_works():
     assert tare.measure_baseline is tare.tare_now
     from tactile500 import measure_baseline, tare_now
     assert measure_baseline is tare_now
+
+
+# ---------- 命令行入口（pyproject 的 tare 脚本） ----------
+
+def test_pyproject_registers_tare_script():
+    """那一行入口必须真的在，而且指向的函数真的存在。"""
+    import importlib
+    from pathlib import Path
+    import re
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    assert re.search(r'^tare\s*=\s*"tactile500\.tare:main"$', text, re.M), text
+    assert 'version = "0.4.2"' in text, "加了功能就要提版本号"
+    module, _, func = "tactile500.tare:main".partition(":")
+    assert callable(getattr(importlib.import_module(module), func))
+
+
+def test_cli_simulate_prints_json_and_writes_journal(tmp_path, capsys):
+    from tactile500.tare import main
+    journal = tmp_path / "journal.jsonl"
+    assert main(["--simulate", "--seconds", "0.5",
+                 "--journal", str(journal), "--note", "冒烟"]) == 0
+    out = capsys.readouterr()
+    payload = json.loads(out.out)
+    assert payload["offsets"], "模拟四板应当采到零点"
+    assert payload["journal"] == str(journal)
+    assert set(payload["offsets"]) == {"left_fingers", "right_fingers",
+                                       "left_palm", "right_palm"}
+    hist = TareJournal(journal).history()
+    assert len(hist) == 1 and hist[0]["note"] == "冒烟"
+    assert hist[0]["offsets"] == payload["offsets"]
+
+
+def test_cli_no_journal_out_file_and_quiet(tmp_path, capsys):
+    from tactile500.tare import main
+    out_file = tmp_path / "tare.json"
+    assert main(["--simulate", "--seconds", "0.4", "--no-journal", "--quiet",
+                 "--out", str(out_file), "--journal", str(tmp_path / "never.jsonl")]) == 0
+    assert capsys.readouterr().out == ""
+    assert not (tmp_path / "never.jsonl").exists(), "--no-journal 不该写档案"
+    saved = json.loads(out_file.read_text(encoding="utf-8"))
+    assert saved["journal"] is None and saved["offsets"]
+
+
+def test_cli_rejects_nonpositive_seconds():
+    import tactile500.tare as tare
+    with pytest.raises(SystemExit) as excinfo:
+        tare.main(["--simulate", "--seconds", "0"])
+    assert excinfo.value.code == 2
+
+
+def test_cli_returns_one_when_no_board(tmp_path, capsys, monkeypatch):
+    """一块板都没有时必须退 1，不能假装校零成功。"""
+    from functools import partial
+
+    import tactile500.api as api
+    from tactile500.tare import main
+    hub = FakeHub()
+    hub.present = set()
+    monkeypatch.setattr(api, "TactileSystem",
+                        partial(api.TactileSystem, enumerate_fn=hub.enumerate,
+                                transport_factory=hub.factory, scan_interval=0.02))
+    code = main(["--seconds", "0.3", "--no-journal", "--quiet"])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "没有采到任何帧" in err

@@ -1,8 +1,6 @@
-# Tactile500 V2 PyUSB 上位机（0.3.0）
+# Tactile500 V2 PyUSB 上位机（0.4.2）
 
-**入口：[安装、接口示例与已知边界](docs/API_AND_INTEGRATION.md)。0.3.0 交付说明见
-[docs/RELEASE_0_3_0.md](docs/RELEASE_0_3_0.md)。OSR256 在固件侧设置，原始 wheel 未重打包。
-USB 重新枚举后需重启采集服务恢复；真实 Hub 热插拔尚不能承诺全部自动恢复。**
+**最新交接入口（2026-09-10）：[安装、接口示例与已知边界](../out/04_wheel交接/联调说明.md)，[两档数据和CH12报告](../out/README.md)。交接wheel仍为0.3.0，OSR256在固件侧设置；原始wheel未重打包。今晚有一次USB重新枚举后需要重启采集服务恢复，真实Hub热插拔尚不能承诺全部自动恢复。**（后续进展：0.4.1 交付软件校零 `tare.py`，0.4.2 起提供 `tare` 命令行，见 `docs/TARE.md`。）
 
 面向 G1 Ubuntu / Python 3.10 的四板触觉采集库。仅通过 PyUSB + libusb 访问 CH340
 （VID `1a86` / PID `7523`），不依赖 ttyUSB、pyserial 或 ch341 内核模块。
@@ -27,16 +25,21 @@ V2 修订 `0x21` 修复了 APM32F402 普通 DMA 通道未关闭导致的约 125H
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.3.0
+.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.4.2
 .venv/bin/tactile500 scan
 .venv/bin/tactile500 probe --seconds 30
 .venv/bin/tactile500 capture --seconds 1800 --output captures/run001
 .venv/bin/tactile500 inspect captures/run001
+.venv/bin/tare --seconds 2 --note "第 1 天开机"   # 夹爪张开、无接触时采一次零点
 # G1 上运行，Windows 访问 G1 当前地址的8875端口：
 .venv/bin/tactile500 view --bind 0.0.0.0 --port 8875 --output-root captures
 # 无实物时的四板模拟，界面明确标示模拟数据：
 .venv/bin/tactile500 view --simulate
 ```
+
+`tare` 是 0.4.2 起的独立命令（软件校零，`src/tactile500/tare.py`）：采一次静止基线、
+打印零点 JSON、追加写入 `~/.tactile500/tare/journal.jsonl`。用法与退出码见
+[docs/TARE.md](docs/TARE.md)。
 
 `wheelhouse/` 同时提供本库和 PyUSB wheel。`scan` 只枚举；`probe/capture` 会配置
 CH340 的 921600 8N1 和 DTR/RTS，然后读 Bulk IN，不向 MCU 发送启动或控制命令。

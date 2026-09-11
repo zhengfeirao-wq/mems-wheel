@@ -33,6 +33,7 @@
     TareResult      一次校零的完整结果
     TareFilter      把零点应用到实时帧
     TareJournal     追加式档案，用于回溯与漂移分析
+    main()          ``tare`` 命令的入口（pip 装完即可用，见 pyproject 的 scripts）
 
 单位
 ----
@@ -42,7 +43,9 @@
 
 from __future__ import annotations
 
+import argparse
 import json
+import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -61,6 +64,7 @@ __all__ = [
     "tare_now",
     "measure_baseline",
     "restore",
+    "main",
 ]
 
 #: 24 位 ADC 顶到正/负端点时，固件缩放后的值（raw = ±2^23，×9/80）。
@@ -360,3 +364,81 @@ class TareJournal:
                          "offsets": [int(x) for x in offs],
                          "note": rec.get("note", "")})
         return rows
+
+
+# ---------- 命令行入口（pyproject 的 [project.scripts] 指向下面这个 main） ----------
+
+def build_parser() -> argparse.ArgumentParser:
+    """``tare`` 命令的参数表；单独抽出来是为了测试能直接查帮助文本。"""
+    ap = argparse.ArgumentParser(
+        prog="tare",
+        description="采一次静止基线（软件校零）：打印零点并写入档案。"
+                    "调用时夹爪必须张开且无接触。",
+        epilog="例：tare --seconds 2 --note 第1天开机   /   无实物自检：tare --simulate --seconds 1",
+    )
+    ap.add_argument("-s", "--seconds", type=float, default=2.0,
+                    help="基线时长，建议 1~3 秒（默认 2）")
+    ap.add_argument("--roles", nargs="*", default=None,
+                    help="只校这些角色；缺省=全部在线板"
+                         "（left_fingers / right_fingers / left_palm / right_palm）")
+    ap.add_argument("--note", default="", help="写进档案的备注，如“第 3 天开机”")
+    ap.add_argument("--journal", type=Path, default=DEFAULT_JOURNAL,
+                    help=f"档案路径（默认 {DEFAULT_JOURNAL}）")
+    ap.add_argument("--no-journal", action="store_true", help="只测不存档")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="把这次结果另存为 JSON，供采集脚本读回")
+    ap.add_argument("--simulate", action="store_true", help="用四板模拟源自检，不碰 USB")
+    ap.add_argument("--indent", type=int, default=2, help="JSON 缩进；0 表示单行（默认 2）")
+    ap.add_argument("--quiet", action="store_true", help="不打印 JSON，只输出警告")
+    return ap
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """``tare`` 命令行入口：采零点 → 打印 → 存档。
+
+    退出码：0 成功；1 一块板都没采到；2 参数错误（argparse）；130 被 Ctrl+C 打断。
+    """
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.seconds <= 0:
+        parser.error("--seconds 必须为正数")
+
+    if args.simulate:
+        from .simulation import demo_system
+        system = demo_system()
+    else:
+        from .api import TactileSystem
+        system = TactileSystem()
+
+    system.open()
+    try:
+        result = tare_now(system, seconds=args.seconds, roles=args.roles or None)
+    except KeyboardInterrupt:
+        print("已中断，未写入档案。", file=sys.stderr)
+        return 130
+    finally:
+        system.close()
+
+    journal_path = None
+    if not args.no_journal:
+        journal = TareJournal(args.journal)
+        journal.append(result, note=args.note)
+        journal_path = str(journal.path)
+
+    payload = result.to_json()
+    payload["journal"] = journal_path
+    text = json.dumps(payload, ensure_ascii=False, indent=args.indent or None)
+    if args.out:
+        Path(args.out).write_text(text + "\n", encoding="utf-8")
+    for warning in result.warnings:
+        print(f"校零警告：{warning}", file=sys.stderr)
+    if not args.quiet:
+        print(text)
+    if not result.offsets:
+        print("校零失败：没有采到任何帧，设备是否在线？", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":  # python -m tactile500.tare
+    raise SystemExit(main())

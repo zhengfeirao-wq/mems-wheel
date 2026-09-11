@@ -135,7 +135,23 @@ journal.latest(identity="0x0A")
 journal.drift(identity="0x0A")     # 某块板的零点随时间变化
 ```
 
-命令行工具：
+命令行工具（pip 装完即用，不必进源码目录，入口在 `pyproject.toml` 的 `[project.scripts]`）：
+
+```bash
+tare --seconds 2 --note "第 1 天开机"     # 采一次零点：打印 JSON 并写入档案
+tare -s 2 --roles left_palm right_palm    # 只校两块掌板
+tare --no-journal --out tare.json         # 只测不存档，另存一份 JSON 给采集脚本
+tare --simulate -s 1                      # 无实物自检（四板模拟源，不碰 USB）
+tare --help
+```
+
+退出码：`0` 成功；`1` 一块板都没采到（设备不在线）；`130` 被 Ctrl+C 打断。
+`--simulate` 走 `simulation.demo_system()`，模拟源本身是正弦信号，所以一定会出现
+"基线不稳"告警——它只用来验证命令链路，不能当校零效果证据。
+
+源码树里没装 wheel 时，等价写法是 `python -m tactile500.tare --simulate -s 1`。
+
+档案查询与还原（这两个是仓库脚本，需在项目根目录执行）：
 
 ```bash
 python tools/tare_journal.py show                     # 列出全部记录
