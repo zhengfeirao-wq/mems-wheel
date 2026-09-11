@@ -11,19 +11,28 @@
 典型用法
 --------
     from tactile500 import TactileSystem
-    from tactile500.tare import measure_baseline, TareFilter, TareJournal
+    from tactile500.tare import tare_now, TareFilter, TareJournal
 
     system = TactileSystem().open()
     journal = TareJournal()
 
     # 采集系统启动时，夹爪张开、无接触，采 2 秒基线
-    result = measure_baseline(system, seconds=2.0)
+    result = tare_now(system, seconds=2.0)
     journal.append(result, note="第 1 天开机")
 
     tared = TareFilter(result)
     item = native.get(timeout=1.0)
     shown = tared.apply_frame(item.frame)   # 0 附近
     raw = item.frame.pressure               # 原始值，一直都在
+
+命名
+----
+全套统一使用 ``tare_*`` 前缀与 ``Tare*`` 类名，搜索 ``tare`` 即可找齐：
+
+    tare_now()      采一次零点（唯一入口）
+    TareResult      一次校零的完整结果
+    TareFilter      把零点应用到实时帧
+    TareJournal     追加式档案，用于回溯与漂移分析
 
 单位
 ----
@@ -49,6 +58,7 @@ __all__ = [
     "TareResult",
     "TareFilter",
     "TareJournal",
+    "tare_now",
     "measure_baseline",
     "restore",
 ]
@@ -160,15 +170,18 @@ def _channel_baseline(values: Sequence[int], fresh: Sequence[int], *,
     return ChannelBaseline(off, spread, n, "ok")
 
 
-def measure_baseline(system, *, seconds: float = 2.0,
-                     roles: Sequence[str] | None = None,
-                     fresh_only: bool = True,
-                     min_samples: int = 50,
-                     max_spread: int = 20_000,
-                     reject_saturated: bool = True,
-                     capacity: int = 8192,
-                     max_frames: int = 40_000) -> TareResult:
-    """采集静止基线并算出每通道的零点偏移。
+def tare_now(system, *, seconds: float = 2.0,
+             roles: Sequence[str] | None = None,
+             fresh_only: bool = True,
+             min_samples: int = 50,
+             max_spread: int = 20_000,
+             reject_saturated: bool = True,
+             capacity: int = 8192,
+             max_frames: int = 40_000) -> TareResult:
+    """采一次静止基线，得到"现在"的零点。整套功能的唯一入口。
+
+    命名统一为 ``tare_*`` 前缀：``tare_now`` / ``TareFilter`` / ``TareJournal`` /
+    ``TareResult``，搜 ``tare`` 即可找齐全部。
 
     调用方必须保证：**夹爪张开、无任何接触**。本函数只能通过"数值是否稳定"
     来兜底提示，无法替代这个前提。
@@ -247,6 +260,10 @@ def measure_baseline(system, *, seconds: float = 2.0,
         identities=identities,
         warnings=tuple(warnings),
     )
+
+
+#: 0.4.0 使用的旧名，保留兼容；新代码请用 tare_now。
+measure_baseline = tare_now
 
 
 class TareFilter:

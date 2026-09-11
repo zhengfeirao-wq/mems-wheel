@@ -8,7 +8,7 @@ import pytest
 from tactile500 import TactileSystem
 from tactile500.tare import (SATURATION, SENTINEL, ChannelBaseline, TareFilter,
                              TareJournal, TareResult, _channel_baseline,
-                             measure_baseline, restore)
+                             tare_now, restore)
 from helpers import FakeHub
 
 
@@ -20,7 +20,7 @@ def test_baseline_is_the_resting_value_and_tared_is_zero():
                            scan_interval=0.02)
     system.open()
     try:
-        result = measure_baseline(system, seconds=0.4, min_samples=20)
+        result = tare_now(system, seconds=0.4, min_samples=20)
         assert result.offsets, "没有采到任何板"
         # 假帧的压力值是 channel*100-1600，静置基线应当正好等于它
         for role, offsets in result.offsets.items():
@@ -50,7 +50,7 @@ def test_frame_keeps_raw_after_tare():
     system.open()
     sub = system.subscribe(capacity=4096)
     try:
-        result = measure_baseline(system, seconds=0.3, min_samples=20)
+        result = tare_now(system, seconds=0.3, min_samples=20)
         tared = TareFilter(result)
         item = sub.get(timeout=3.0)
         frame = item.frame
@@ -173,3 +173,10 @@ def test_filter_strict_rejects_length_mismatch():
     TareFilter(result).apply("left_palm", (1, 2, 3))  # 宽松模式不报错
     with pytest.raises(ValueError):
         TareFilter(result, strict=True).apply("left_palm", (1, 2, 3))
+
+def test_old_name_still_works():
+    """0.4.0 的 measure_baseline 必须继续可用。"""
+    import tactile500.tare as tare
+    assert tare.measure_baseline is tare.tare_now
+    from tactile500 import measure_baseline, tare_now
+    assert measure_baseline is tare_now

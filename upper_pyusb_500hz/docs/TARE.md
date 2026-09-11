@@ -2,8 +2,27 @@
 
 **把静止基线从压力值里减掉，让"未接触"时读数接近 0；同时完整保留原始值，可随时还原。**
 
-面向调用方（你的采集系统插件）：在每次开始采集前调用一次 `measure_baseline()`，
+面向调用方（你的采集系统插件）：在每次开始采集前调用一次 `tare_now()`，
 之后用 `TareFilter` 处理订阅到的帧即可。
+
+---
+
+## 命名（搜 `tare` 即可找齐全套）
+
+| 名称 | 类型 | 作用 |
+|---|---|---|
+| **`tare_now()`** | 函数 | **唯一入口**：采一次零点 |
+| `TareResult` | 类 | 一次校零的完整结果（偏移 + 质量 + 警告） |
+| `TareFilter` | 类 | 把零点应用到实时帧 |
+| `TareJournal` | 类 | 追加式档案，用于回溯与漂移分析 |
+| `ChannelBaseline` | 类 | 单通道基线统计 |
+| `restore()` | 函数 | 把校零值还原成原始值 |
+| `tactile500.tare` | 模块 | |
+| `docs/TARE.md` | 文档 | 本文件 |
+| `tools/tare_journal.py` | CLI | 漂移分析 / 还原 |
+| `~/.tactile500/tare/journal.jsonl` | 档案 | 每次校零追加一行 |
+
+> `measure_baseline` 是 0.4.0 的旧名，保留为 `tare_now` 的别名，可继续使用。
 
 ---
 
@@ -21,14 +40,14 @@
 
 ```python
 from tactile500 import TactileSystem
-from tactile500.tare import measure_baseline, TareFilter, TareJournal
+from tactile500.tare import tare_now, TareFilter, TareJournal
 
 system = TactileSystem()
 native = system.subscribe(capacity=16384)
 system.open()
 
 # ① 采集系统启动时：夹爪张开、无接触，采 2 秒基线
-result = measure_baseline(system, seconds=2.0)
+result = tare_now(system, seconds=2.0)
 for w in result.warnings:
     print("校零警告:", w)
 
@@ -48,7 +67,7 @@ while True:
 
 ## API
 
-### `measure_baseline(system, *, seconds=2.0, roles=None, fresh_only=True, min_samples=50, max_spread=20000, reject_saturated=True, capacity=8192, max_frames=40000) -> TareResult`
+### `tare_now(system, *, seconds=2.0, roles=None, fresh_only=True, min_samples=50, max_spread=20000, reject_saturated=True, capacity=8192, max_frames=40000) -> TareResult`
 
 采集静止基线。**调用方必须保证夹爪空载**——本函数只能靠"数值是否稳定"兜底提示。
 
@@ -150,7 +169,7 @@ left_fingers   12通道  ok=11  饱和=1
 
 1. **单位仍是"固件值"**，不是 Pa 也不是 N。校零后是**相对变化量**；绝对量纲需实物标定。
 2. **一次性校零**，不做滑动基线。滑动基线会把缓慢变化的真实力当成漂移减掉——
-   动态夹爪上很危险。需要重校时再调一次 `measure_baseline()`。
+   动态夹爪上很危险。需要重校时再调一次 `tare_now()`。
 3. **温漂**：芯片 DSP 已做二阶温度补偿，残余漂移较小；长期漂移可由 journal 的 drift 曲线观察。
 4. **不要用它代替芯片标定**。芯片标定系数在 EEPROM（`0xAE`~`0xBC`），本模块完全不碰。
 5. 饱和通道（如 `left_fingers ch0`）**修不好就是修不好**——本模块只负责不让你误以为是零点。
