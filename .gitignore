@@ -1,0 +1,59 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ---- 采集数据与录制产物（体积大，不入库）----
+captures/
+*.t5raw
+*.csv
+*.jsonl
+
+# ---- 固件构建产物（体积大，可重现）----
+firmware_tactile500/Project/**/Objects/
+firmware_tactile500/Project/**/Listings/
+firmware_tactile500/Project/**/*.uvguix.*
+*.o
+*.d
+*.crf
+*.axf
+*.lnp
+*.htm
+*.dep
+*.bak
+*.scvd
+*.map
+*.elf
+
+# 注意：.hex 与 .bin 是交付物，刻意保留以便直接烧录
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 凭据（绝不入库）----
+config.py
+*_config.py
+credentials*
+*.pem
+*.key
+.env

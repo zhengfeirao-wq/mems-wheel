@@ -1,0 +1,170 @@
+{
+  "created_utc": "2026-09-10T15:07:53.006449+00:00",
+  "pressure_osr": 256,
+  "temperature_osr": 256,
+  "a6": "0x40",
+  "a7": "0x80",
+  "wire_version": "0x21",
+  "frame_hz": 500,
+  "hardware_tested": false,
+  "backup": "D:\\2026\\2026-1-THU-G1-mems_tactile_repeatedExperiments\\（8）500Hz（win）上位机 2026-9-7\\（1）pyusb版本上位机500Hz\\备份\\OSR2048_before_256_20260910_230523.zip",
+  "config_sha256": "1b27c932f5f87775bc85a536b84a768927e903118ec4341075dda0fd164f0917",
+  "profiles": [
+    {
+      "compiler": "keil",
+      "profile": "Left_Fingers12",
+      "hex": "build/keil/Left_Fingers12/Tactile500_Left_Fingers12.hex",
+      "sha256": "49dd669d79158d57437713e8e4cb66b8858c14bcaaf32a024518028e96acf0ad",
+      "flash_bytes": 9840,
+      "stack": "0x20000ba0",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Left_Fingers12.hex"
+    },
+    {
+      "compiler": "keil",
+      "profile": "Left_Palm32_Long",
+      "hex": "build/keil/Left_Palm32_Long/Tactile500_Left_Palm32_Long.hex",
+      "sha256": "56108fb6cc76c7a8030e985665ad44ddd7d997175da018808c1242faceac8e8a",
+      "flash_bytes": 10152,
+      "stack": "0x20000c90",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Left_Palm32_Long.hex"
+    },
+    {
+      "compiler": "keil",
+      "profile": "Left_Palm32_Short",
+      "hex": "build/keil/Left_Palm32_Short/Tactile500_Left_Palm32_Short.hex",
+      "sha256": "e51279fdda3347f0d09c6af994cc7ae87c02e9db612f4a9b05db78d7f87fa37b",
+      "flash_bytes": 10152,
+      "stack": "0x20000c90",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Left_Palm32_Short.hex"
+    },
+    {
+      "compiler": "keil",
+      "profile": "Right_Fingers12",
+      "hex": "build/keil/Right_Fingers12/Tactile500_Right_Fingers12.hex",
+      "sha256": "7e380b587668ee8b45ddd672ff6340349008e7b3b12268ce1b698d402963c916",
+      "flash_bytes": 9840,
+      "stack": "0x20000ba0",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Right_Fingers12.hex"
+    },
+    {
+      "compiler": "keil",
+      "profile": "Right_Palm32_Long",
+      "hex": "build/keil/Right_Palm32_Long/Tactile500_Right_Palm32_Long.hex",
+      "sha256": "f0c287fed3b703a884bf3b04da2926a4120140c639c7dd07ed25dc13a469efb0",
+      "flash_bytes": 10152,
+      "stack": "0x20000c90",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Right_Palm32_Long.hex"
+    },
+    {
+      "compiler": "keil",
+      "profile": "Right_Palm32_Short",
+      "hex": "build/keil/Right_Palm32_Short/Tactile500_Right_Palm32_Short.hex",
+      "sha256": "8860e09e5c80efaa10796dabdf7909cd2be60a93224826630c7e4cdd63138440",
+      "flash_bytes": 10152,
+      "stack": "0x20000c90",
+      "reset": "0x800015d",
+      "changed_from_2048": true,
+      "errors": 0,
+      "warnings": 27,
+      "warning_types": [
+        "Warning: C4008W: splitting LDM/STM has no benefit"
+      ],
+      "delivery_hex": "OSR256_Tactile500_Right_Palm32_Short.hex"
+    },
+    {
+      "compiler": "gcc",
+      "profile": "left_fingers12",
+      "hex": "build/gcc/left_fingers12/Tactile500_left_fingers12.hex",
+      "sha256": "c89d580fe497443483625eaa8ca2bdc304d89a1980f1c23bc15161629c054cc1",
+      "flash_bytes": 11580,
+      "stack": "0x20008000",
+      "reset": "0x8002941",
+      "changed_from_2048": true
+    },
+    {
+      "compiler": "gcc",
+      "profile": "left_palm32_long",
+      "hex": "build/gcc/left_palm32_long/Tactile500_left_palm32_long.hex",
+      "sha256": "cc02edede23ef35e218e76c78cdc43f05519b576877621fe7d2ae0954096d7c0",
+      "flash_bytes": 11948,
+      "stack": "0x20008000",
+      "reset": "0x8002975",
+      "changed_from_2048": true
+    },
+    {
+      "compiler": "gcc",
+      "profile": "left_palm32_short",
+      "hex": "build/gcc/left_palm32_short/Tactile500_left_palm32_short.hex",
+      "sha256": "6bfaa6de2944cd1492966cbdc03663273e48217164650b12e561642099c4cfff",
+      "flash_bytes": 11948,
+      "stack": "0x20008000",
+      "reset": "0x8002975",
+      "changed_from_2048": true
+    },
+    {
+      "compiler": "gcc",
+      "profile": "right_fingers12",
+      "hex": "build/gcc/right_fingers12/Tactile500_right_fingers12.hex",
+      "sha256": "650f00d8b0a4da836055b7d1378726ff63fdff08120e0f9acbc65f0e318f433e",
+      "flash_bytes": 11580,
+      "stack": "0x20008000",
+      "reset": "0x8002941",
+      "changed_from_2048": true
+    },
+    {
+      "compiler": "gcc",
+      "profile": "right_palm32_long",
+      "hex": "build/gcc/right_palm32_long/Tactile500_right_palm32_long.hex",
+      "sha256": "8ab8c4a9c7409b7d61ad7764b3a91496dadc8a434ae5728a29ca92df3a691dd2",
+      "flash_bytes": 11948,
+      "stack": "0x20008000",
+      "reset": "0x8002975",
+      "changed_from_2048": true
+    },
+    {
+      "compiler": "gcc",
+      "profile": "right_palm32_short",
+      "hex": "build/gcc/right_palm32_short/Tactile500_right_palm32_short.hex",
+      "sha256": "7584b5da6996b408e45e6d49ee36cc5825bbeb4036f04480484cb517bb59f84c",
+      "flash_bytes": 11948,
+      "stack": "0x20008000",
+      "reset": "0x8002975",
+      "changed_from_2048": true
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tactile500 · 四板采集</title>
+<style>
+:root{color-scheme:light;font:16px/1.5 "Segoe UI","Microsoft YaHei",sans-serif;color:#172c35;background:#f0f4f5}
+*{box-sizing:border-box}body{margin:0}header{padding:20px 28px;background:#153d48;color:white;display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:24px;margin:0}header p{margin:4px 0 0;color:#c6e0e6;font-size:14px}
+main{max-width:1700px;margin:auto;padding:20px 28px}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+button,select{font:inherit;border:1px solid #b6c8ce;background:white;border-radius:6px;padding:8px 14px;cursor:pointer;color:#183a46}
+button:focus-visible,select:focus-visible{outline:3px solid #e0941c;outline-offset:2px}button.primary{background:#08695c;color:#fff;border-color:#08695c}button:disabled{opacity:.45;cursor:default}
+.pill{display:inline-block;font-size:14px;border-radius:20px;padding:4px 12px;background:#deecee;color:#275461}.pill.ok{background:#d8f1e6;color:#135841}.pill.bad{background:#ffe3df;color:#9c3026}.pill.warn{background:#fff0cc;color:#805600}
+#connection{white-space:nowrap}.note{font-size:14px;color:#526b75;margin:8px 0 16px}#recordStatus{font-size:14px;overflow-wrap:anywhere}#error{color:#a22f24;white-space:pre-wrap}
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:18px}.board{border:1px solid #d4e0e3;border-radius:10px;background:white;padding:18px;min-width:0}
+.boardhead{display:flex;align-items:center;justify-content:space-between;gap:12px}h2{font-size:20px;margin:0}.meta{font-size:14px;color:#637b85;margin:5px 0 12px;min-height:21px}
+.metrics{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:12px}.metric strong{font-size:25px;font-variant-numeric:tabular-nums;font-weight:600;display:block}.metric span{font-size:14px;color:#647b84}
+.channelgrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:10px}.channel{padding:5px 2px;min-width:0;border:1px solid #d5e4e6;background:#f4f9f9;border-radius:5px;font-size:12px;line-height:1.4}.channel b{display:block;font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}.channel small{display:block;color:#4e6d75;font-size:12px}.channel.selected{outline:2px solid #0b8374;outline-offset:-2px}
+.charthead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;font-size:14px}.charthead select{font-size:14px;padding:3px 7px}canvas{display:block;width:100%;height:120px;background:#f8fafb;border-radius:5px;margin-top:8px}
+.message{font-size:14px;color:#637b85;padding:18px 0}.detail{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0;color:#546e79}
+details{margin-top:14px;font-size:14px}summary{cursor:pointer;color:#335967}.device{margin-top:16px;background:#e6edef;padding:12px;border-radius:6px}footer{margin:16px 0 0;font-size:14px;color:#617983}
+@media(max-width:960px){header{padding:16px}main{padding:16px}.boards{grid-template-columns:1fr}.channelgrid{grid-template-columns:repeat(8,minmax(0,1fr))}}
+@media(max-width:520px){header{align-items:flex-start;flex-direction:column}.board{padding:12px}.channelgrid{grid-template-columns:repeat(4,minmax(0,1fr))}.metrics{gap:16px}}
+</style>
+</head>
+<body>
+<header><div><h1>Tactile500 · 四板采集</h1><p>每板目标 500 帧/秒 · Windows 远程查看</p></div><span id="connection" class="pill">正在连接…</span></header>
+<main>
+<div class="toolbar">
+<button id="record" class="primary" disabled>开始原始录制</button>
+<button id="stop" disabled>停止并保存</button>
+<button id="zero" disabled>设置显示基线</button>
+<span id="recordStatus">读取录制状态…</span>
+</div>
+<p class="note">界面约 10 次/秒刷新，曲线显示最近 20 秒的抽样值；原始录制保留全部接收帧。压力为现有数值尺度，尚未标定为 N 或 Pa。设置基线只影响显示。</p>
+<div id="error" role="alert"></div><div class="boards" id="boards"></div>
+<details class="device"><summary>USB 设备与连接诊断</summary><pre class="detail" id="devices">等待数据</pre></details>
+<footer>新转换位为 0 表示未取得新转换证据，不直接代表断线。四板分别计时，当前未实现 ADC 硬件同步。</footer>
+</main>
+<script>
+"use strict";
+const token="__CONTROL_TOKEN__", roles=["left_fingers","right_fingers","left_palm","right_palm"];
+const labels=["左手 · 12 点","右手 · 12 点","左手 · 32 点","右手 · 32 点"];
+const stateNames={updated:"在线",reused:"在线",stale:"数据过期",missing:"未检测到",offline:"已断开",ambiguous:"身份冲突"};
+const models={}, root=document.getElementById("boards");
+let latest=null, busy=false, lastTick=null, lastAdvance=performance.now();
+const statusBits=["未取得全部新转换证据","SPI 错误","传感器错误","初始化失败","采集超时（锁存）","发送忙（锁存）","发送错误（锁存）","节拍迟到（锁存）"];
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+function number(v,d=0){return Number.isFinite(v)?v.toFixed(d):"—"}
+roles.forEach((role,i)=>{
+  const card=el("article","board");const head=el("div","boardhead"), badge=el("span","pill","未检测到");
+  head.append(el("h2","",labels[i]),badge);const meta=el("p","meta","等待板卡身份"),metrics=el("div","metrics");
+  const fields={};[["rate","主机收包 / 秒"],["missing","序号缺口"],["bad","稳态坏帧"],["age","数据年龄 / ms"]].forEach(([k,label])=>{const m=el("div","metric");fields[k]=el("strong","","—");m.append(fields[k],el("span","",label));metrics.append(m)});
+  const message=el("div","message","等待连接"),grid=el("div","channelgrid"),charthead=el("div","charthead"),selected=el("span","","选择一个通道查看曲线"),select=el("select");
+  select.setAttribute("aria-label",labels[i]+"曲线类型");[["pressure","压力 Δ"],["temperature","温度 °C"]].forEach(([v,t])=>{const o=el("option","",t);o.value=v;select.append(o)});
+  const canvas=el("canvas");canvas.setAttribute("aria-label",labels[i]+"抽样趋势图");
+  charthead.append(selected,select);const detailWrap=el("details"),detail=el("pre","detail");
+  detailWrap.append(el("summary","","通道映射与帧诊断"),detail);card.append(head,meta,metrics,message,grid,charthead,canvas,detailWrap);root.append(card);
+  const model={card,badge,meta,fields,message,grid,selected,select,canvas,detail,index:0,history:[],base:[],buttons:[],key:null,frame:null};models[role]=model;
+  select.addEventListener("change",()=>{model.history=[];draw(model)});
+});
+function draw(m){
+  const c=m.canvas,w=c.clientWidth,h=c.clientHeight,dpr=window.devicePixelRatio||1;c.width=w*dpr;c.height=h*dpr;
+  const x=c.getContext("2d");x.scale(dpr,dpr);x.font="12px Segoe UI";x.fillStyle="#647b84";
+  const a=m.history;if(!a.length){x.fillText("等待此通道的有效数据",12,28);return}
+  let lo=Math.min(...a.map(p=>p[1])),hi=Math.max(...a.map(p=>p[1]));if(hi-lo<1){lo-=.5;hi+=.5}
+  const pad=(hi-lo)*.08;lo-=pad;hi+=pad;x.fillText(hi.toFixed(1),8,14);x.fillText(lo.toFixed(1),8,h-12);
+  x.strokeStyle="#dce7e9";x.beginPath();x.moveTo(55,h/2);x.lineTo(w-8,h/2);x.stroke();
+  const end=a[a.length-1][0];x.strokeStyle="#098575";x.lineWidth=1.8;x.beginPath();
+  a.forEach(([t,v],i)=>{const px=55+(t-end+20000)/20000*(w-65),py=12+(hi-v)/(hi-lo)*(h-34);if(i===0)x.moveTo(px,py);else x.lineTo(px,py)});x.stroke();
+  x.fillText("-20 s",55,h-2);x.fillText("现在",w-38,h-2);
+}
+function renderBoard(b,time){
+  time=latest?latest.host_monotonic_ms:time;
+  const m=models[b.role];m.frame=b;m.badge.textContent=stateNames[b.state]||b.state;
+  m.badge.className="pill "+(["updated","reused"].includes(b.state)?"ok":b.state==="stale"?"warn":"bad");
+  if(!b.pressure){m.message.hidden=false;m.message.textContent=b.state==="ambiguous"?"检测到同角色多块板，请检查烧录身份；原始录制按 USB 路径分开保存。":"该角色暂无可用数据，其他板继续采集。";m.grid.hidden=true;m.history=[];m.key=null;Object.values(m.fields).forEach(e=>e.textContent="—");m.meta.textContent="等待唯一板卡身份";m.detail.textContent="";m.selected.textContent="等待通道数据";draw(m);return}
+  const key=b.path+":"+b.epoch+":"+b.identity;
+  if(m.key!==key){m.key=key;m.base=[...b.pressure];m.history=[];m.buttons=[];m.grid.replaceChildren();b.pressure.forEach((v,i)=>{const button=el("button","channel");const name=el("span","","CH"+String(i+1).padStart(2,"0")),value=el("b"),temp=el("small");button.append(name,value,temp);button.addEventListener("click",()=>{m.index=i;m.history=[];renderBoard(m.frame,time)});m.buttons.push({button,value,temp});m.grid.append(button)})}
+  m.message.hidden=true;m.grid.hidden=false;
+  b.pressure.forEach((v,i)=>{if(m.base[i]===-8388608&&v!==-8388608)m.base[i]=v});
+  if(b.status&0xfe){m.message.hidden=false;m.message.textContent=statusBits.filter((_,i)=>i>0&&(b.status&(1<<i))).join("；");m.message.style.color="#a22f24";m.badge.textContent=(stateNames[b.state]||b.state)+" · 异常";m.badge.className="pill bad"}
+  m.meta.textContent=b.identity+" · "+(b.cable==="short"?"短线新版":b.cable==="long"?"长线旧版":"12 点")+" · "+b.mapping;
+  const d=b.diagnostics;m.fields.rate.textContent=b.state==="stale"?"0 / 过期":number(b.recent_rate_hz,1);m.fields.missing.textContent=d.missing_slots;m.fields.bad.textContent=d.stream_rejected_candidates;m.fields.age.textContent=number(b.age_ms,1);
+  m.buttons.forEach(({button,value,temp},i)=>{const valid=b.pressure[i]!==-8388608,delta=valid?b.pressure[i]-m.base[i]:null;value.textContent=valid?(delta>=0?"+":"")+number(delta):"无数据";temp.textContent=b.temperature[i]===-32768?"— °C":number(b.temperature[i]/10,1)+" °C";button.classList.toggle("selected",i===m.index);button.title="CH"+(i+1)+" ← MCU ch"+b.source_channels[i]+"；压力值 "+b.pressure[i]+"；新转换位 "+((b.fresh_mask>>>i)&1);button.style.backgroundColor=valid?"hsl(169 40% "+(97-Math.min(18,Math.abs(delta)/200))+ "%)":"#eee"});
+  m.selected.textContent="CH"+String(m.index+1).padStart(2,"0")+" ← ch"+b.source_channels[m.index]+" · 当前 "+(m.select.value==="pressure"?b.pressure[m.index]:number(b.temperature[m.index]/10,1));
+  const v=m.select.value==="pressure"?(b.pressure[m.index]===-8388608?null:b.pressure[m.index]-m.base[m.index]):(b.temperature[m.index]===-32768?null:b.temperature[m.index]/10);
+  if(b.state!=="stale"&&v!==null){m.history.push([time,v]);m.history=m.history.filter(p=>p[0]>=time-20000).slice(-220)}else m.history=[];
+  draw(m);const status=statusBits.filter((_,i)=>b.status&(1<<i)).join("；")||"无异常标志";
+  m.detail.textContent="USB "+b.path+" · 帧版本 "+b.version+" · 序号 "+b.sequence+"\n累计 "+d.frames+" 帧；主机平均 "+number(d.host_received_rate_hz,3)+" Hz；MCU 接收 "+number(d.mcu_received_rate_hz,3)+" Hz\n重复 "+d.duplicates+"；重连 "+d.reconnects+"；USB 队列丢块 "+d.input_dropped_chunks+"；起始未同步候选 "+d.startup_rejected_candidates+"\nstatus 0x"+b.status.toString(16).padStart(2,"0")+"："+status+"\nfresh_mask 0x"+b.fresh_mask.toString(16).padStart(8,"0")+"\n显示位置 → 原始通道："+b.source_channels.join(", ");
+}
+function renderRecording(r){
+  document.getElementById("record").disabled=busy||r.active;document.getElementById("stop").disabled=busy||!r.active;
+  const s=r.active?r:r.last;document.getElementById("recordStatus").textContent=s?(r.active?"录制中":"已保存")+" · "+s.records+" 帧 · 录制丢弃 "+s.dropped+(s.error?" · 错误："+s.error:"")+" · "+s.directory:"尚未录制";
+}
+async function poll(){
+  try{
+    const response=await fetch("/api/snapshot",{cache:"no-store",signal:AbortSignal.timeout(2500)});if(!response.ok)throw new Error("HTTP "+response.status);
+    const data=await response.json();if(data.view_error||!data.boards)throw new Error(data.view_error||"等待采集服务");
+    if(data.tick!==lastTick){lastTick=data.tick;lastAdvance=performance.now()}else if(performance.now()-lastAdvance>2500)throw new Error("采集视图已停止更新");
+    latest=data;const connection=document.getElementById("connection");connection.textContent=(data.simulation?"模拟数据":"实时数据")+" · v"+data.version;connection.className="pill "+(data.simulation?"warn":"ok");
+    data.boards.forEach(b=>renderBoard(b,data.host_monotonic_ms));renderRecording(data.recording);document.getElementById("zero").disabled=false;
+    document.getElementById("error").textContent=data.discovery_error||"";
+    document.getElementById("devices").textContent=data.devices.length?data.devices.map(d=>d.path+" · "+(d.role||"尚未识别身份")+" · "+(d.connected?"USB 已连接":"重试中")+(d.error?" · "+d.error:"")).join("\n"):"尚未枚举到 CH340 设备";
+  }catch(e){
+    document.getElementById("connection").textContent="连接中断";document.getElementById("connection").className="pill bad";document.getElementById("error").textContent=e.message;
+    document.getElementById("recordStatus").textContent="连接中断，录制状态需重连确认"+(latest?" · 上次状态："+(latest.recording.active?"录制中":"未录制"):"");
+    ["record","stop","zero"].forEach(id=>document.getElementById(id).disabled=true);
+    Object.values(models).forEach(m=>{m.badge.textContent="连接中断";m.badge.className="pill bad";m.fields.rate.textContent="—";m.fields.age.textContent="—";m.history=[];draw(m)});
+  }finally{setTimeout(poll,100)}
+}
+async function record(action){
+  busy=true;if(latest)renderRecording(latest.recording);
+  try{const response=await fetch("/api/record/"+action,{method:"POST",headers:{"X-Tactile-Control":token},signal:AbortSignal.timeout(15000)});const r=await response.json();if(!response.ok)throw new Error(r.error||response.status);renderRecording(r)}
+  catch(e){document.getElementById("error").textContent="录制操作失败："+e.message}finally{busy=false}
+}
+document.getElementById("record").addEventListener("click",()=>record("start"));document.getElementById("stop").addEventListener("click",()=>record("stop"));
+document.getElementById("zero").addEventListener("click",()=>{Object.values(models).forEach(m=>{if(m.frame?.pressure){m.base=[...m.frame.pressure];m.history=[]}})});
+window.addEventListener("resize",()=>Object.values(models).forEach(draw));poll();
+</script>
+</body></html>
