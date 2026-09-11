@@ -8,14 +8,13 @@ Windows浏览器只访问G1上的查看服务；USB接收、解码和原始数�
 
 - [安装包](../wheelhouse/tactile500-0.3.0-py3-none-any.whl)
 - [离线依赖PyUSB 1.3.1](../wheelhouse/pyusb-1.3.1-py3-none-any.whl)
-- [固件Keil工程](../../嵌入式代码/Applications/Tactile500/Project/MDK/Tactile500.uvprojx)
-- [按四块实物选择HEX](../../嵌入式代码/先读我_四板首次烧录.md)
-- [MCU完整通信协议](../../嵌入式代码/Applications/Tactile500/docs/PROTOCOL_V2.md)
-- [性能与验证结果](../reports/release_0_3_0/验收结果.md)
+- [固件Keil工程](../../firmware_tactile500/Project/MDK/Tactile500.uvprojx)
+- [按四块实物选择HEX](../../firmware_tactile500/先读我_四板首次烧录.md)
+- [MCU完整通信协议](../../firmware_tactile500/docs/PROTOCOL_V2.md)
 
 G1已经建立独立环境：`/home/agi/tactile500_release_20260910_03/.venv`。
-此前0.2.0实验目录与机器人应用环境保留。本机能用的SSH地址在本轮核实为
-`agi@10.42.0.101`；换网络后重新确认地址。
+此前0.2.0实验目录与机器人应用环境保留。SSH 地址形如
+`agi@<G1-IP>`（把 `<G1-IP>` 换成机器人当前实际地址）；换网络后需重新确认。
 
 在G1终端中执行：
 
@@ -25,7 +24,7 @@ cd /home/agi/tactile500_release_20260910_03
 .venv/bin/tactile500 view --bind 0.0.0.0 --port 8875 --output-root captures
 ```
 
-Windows浏览器打开 `http://10.42.0.101:8875`。板卡烧录后上电自动输出，主机无需发送启动命令。
+Windows浏览器打开 `http://<G1-IP>:8875`。板卡烧录后上电自动输出，主机无需发送启动命令。
 软件以线上身份选择左12、右12、左32、右32；右侧实物尚未接上时显示未检测到。
 界面有全部88个通道的压力变化量和温度、选中通道趋势、收包率、数据年龄、缺口和坏帧。
 点击通道可在详情中核对显示位置与MCU通道。短线新版使用用户确认的32点位置表；

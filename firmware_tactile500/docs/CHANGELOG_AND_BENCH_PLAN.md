@@ -15,11 +15,11 @@
   Keil每个目标0错误、27条相同C4008W提示（splitting LDM/STM has no benefit）；
   本轮没有为清除提示而改优化选项。GNU仍有下文列出的SDK/newlib/链接脚本警告。
 - 共12份HEX逐条校验记录校验和、Flash范围、初始栈、Reset/TMR2/USART2/DMA1 Channel7向量；
-  与ELF/AXF对应符号匹配，确认HEX晚于编译相关源文件。清单见[build/first_flash_manifest.json](../build/first_flash_manifest.json)。
+  与ELF/AXF对应符号匹配，确认HEX晚于编译相关源文件。清单见[首次烧录清单](../烧录_OSR256_20260910/先读我_OSR256烧录.md)。
 - 本轮源文件备份为上一级备份目录的Tactile500_before_first_flash_20260910_192139.zip。
   本轮没有进行烧录、修改USB驱动或操作机器人；实际500Hz输出、通道读数和ADC新转换率以接下来的测量为准。
 
-操作入口：[四板首次烧录](../../../先读我_四板首次烧录.md)。
+操作入口：[四板首次烧录](../先读我_四板首次烧录.md)。
 
 ## 主要修正
 

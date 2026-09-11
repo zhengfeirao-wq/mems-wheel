@@ -7,7 +7,8 @@ import time
 from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--url", default="http://10.42.0.101:8875")
+parser.add_argument("--url", default="http://localhost:8875",
+                    help="监视服务地址；远程访问时改为 http://<G1-IP>:8875")
 parser.add_argument("--seconds", type=float, default=45)
 parser.add_argument("--output", type=Path, default=Path("reports/press_plot_20260910_run01"))
 args = parser.parse_args()

@@ -6,14 +6,14 @@
 
 **本轮用户确认：左12、左32、右12、右32四板经同一Hub接入；先烧录32点短线新版。
 第一阶段验收每板500完整帧/秒，ADC新转换率另测。** 短线=新版（原NEW_HARDWARE=1），
-长线=旧版（=0）。先看[首次烧录说明](../../先读我_四板首次烧录.md)与[板型和用户实测位置表](docs/BOARD_VARIANTS_AND_CHANNEL_MAP.md)。
+长线=旧版（=0）。先看[首次烧录说明](先读我_四板首次烧录.md)与[板型和用户实测位置表](docs/BOARD_VARIANTS_AND_CHANNEL_MAP.md)。
 
 **交付状态（2026-09-10）：当前固件修订 0x21，六种板型已用 Arm GNU Toolchain 重建。用户通过 Keil 重建并烧录左12和左32短线；G1 已收到两板原生约500帧/秒及温度/压力数值。首次实物反馈后的 DMA 修正见 [修订21说明](docs/REVISION_21_HARDWARE_FIX.md)。当前 DRDY 全0，仍未证明每通道500Hz新ADC转换，也未做示波器时序验证。**
 
 ## 入口与板型
 
 - Keil 工程：[Project/MDK/Tactile500.uvprojx](Project/MDK/Tactile500.uvprojx)
-- 已构建固件：[build/gcc](build/gcc)，选择与实际板子一致的目录，不要把六份依次烧到同一块板。
+- 已构建固件：[build/gcc](烧录_OSR256_20260910)，选择与实际板子一致的目录，不要把六份依次烧到同一块板。
 - 固件参数：[Include/tactile_config.h](Include/tactile_config.h)
 - 协议及上位机对接：[docs/PROTOCOL_V2.md](docs/PROTOCOL_V2.md)
 - 改动、DMA 配置、烧录与验收：[docs/CHANGELOG_AND_BENCH_PLAN.md](docs/CHANGELOG_AND_BENCH_PLAN.md)
@@ -48,7 +48,7 @@ GNU 构建工具自动复制所需源文件到临时目录，适配当前中文�
 本轮已在本机用Keil 5.27.1 + Arm Compiler 5.06 update 6 (build 750) 与
 Geehy.APM32F4xx_DFP.1.0.7支持包重建全部六个Target：均为0错误、27条相同的C4008W编译选项提示。
 GNU 14.3.Rel1也已重建六种固件。两套共12份HEX的校验、Flash范围和启动/中断向量检查通过，
-SHA-256与检查记录见[本轮构建清单](build/first_flash_manifest.json)。本轮未烧录硬件。
+SHA-256与检查记录见[本轮构建清单](烧录_OSR256_20260910/先读我_OSR256烧录.md)。本轮未烧录硬件。
 
 ## 源文件职责
 

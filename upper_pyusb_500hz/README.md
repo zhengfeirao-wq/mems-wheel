@@ -1,6 +1,8 @@
 # Tactile500 V2 PyUSB 上位机（0.3.0）
 
-**最新交接入口（2026-09-10）：[安装、接口示例与已知边界](../out/04_wheel交接/联调说明.md)，[两档数据和CH12报告](../out/README.md)。交接wheel仍为0.3.0，OSR256在固件侧设置；原始wheel未重打包。今晚有一次USB重新枚举后需要重启采集服务恢复，真实Hub热插拔尚不能承诺全部自动恢复。**
+**入口：[安装、接口示例与已知边界](docs/API_AND_INTEGRATION.md)。0.3.0 交付说明见
+[docs/RELEASE_0_3_0.md](docs/RELEASE_0_3_0.md)。OSR256 在固件侧设置，原始 wheel 未重打包。
+USB 重新枚举后需重启采集服务恢复；真实 Hub 热插拔尚不能承诺全部自动恢复。**
 
 面向 G1 Ubuntu / Python 3.10 的四板触觉采集库。仅通过 PyUSB + libusb 访问 CH340
 （VID `1a86` / PID `7523`），不依赖 ttyUSB、pyserial 或 ch341 内核模块。

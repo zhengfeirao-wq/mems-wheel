@@ -58,6 +58,9 @@ def inspect(path):
 
 
 if __name__ == '__main__':
+    # 注意：本脚本针对原始工作区运行——需相邻存在“硬件原理图和芯片原理图/”目录，
+    # 产物写入“gpt6-tactile500_pyusb上位机/reports/”。这两者均未纳入本仓库
+    # （体积原因，见根目录 README「包含与不包含」），因此在仓库内直接运行会找不到路径。
     root = Path(__file__).resolve().parents[2]
     dest = root/'gpt6-tactile500_pyusb上位机/reports/firmware_hardware_audit_20260910'
     for path in (root/'硬件原理图和芯片原理图').glob('*.PcbDoc'):

@@ -1,5 +1,7 @@
 param(
-    [string]$RobotAddress = "10.42.0.101",
+    # 机器人地址。在 G1 本机运行保持 localhost；从 Windows 远程查看时传入机器人 IP，
+    # 例如： .\打开G1四板查看.ps1 -RobotAddress 192.168.1.100
+    [string]$RobotAddress = "localhost",
     [int]$ViewPort = 8875
 )
 $viewUrl = "http://${RobotAddress}:${ViewPort}/"
