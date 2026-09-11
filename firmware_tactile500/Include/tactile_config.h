@@ -59,13 +59,43 @@
 #define TACTILE_MAPPING_REVISION     1U
 #define TACTILE_WIRE_VERSION         0x21U /* 协议主版本 2，固件修订 1。 */
 
-/* APB2=120MHz, APB1=60MHz，两路SPI均为1.875MHz，接近原2MHz。
- * 2026-09-10 OSR256试验：压力/温度OSR均为256，保留原增益。
- * 500Hz新测量与重复率需烧录后实测；协议、片选及帧率不变。 */
-#define TACTILE_SPI1_PRESCALER        SPI_BAUDRATEPRESCALER_64
-#define TACTILE_SPI2_PRESCALER        SPI_BAUDRATEPRESCALER_32
+/* 2026-09-11：SPI 从 1.875MHz 提到 7.5MHz。
+ * 依据 NSA2302 datasheet Rev1.2 Table 7.2：f_sclk 上限 10MHz（负载25pF）。
+ * 提速原因：改为命令驱动单次转换后每帧要额外写 0x30 触发寄存器，
+ * 每帧SPI字节数 320 -> 416。1.875MHz 需 1.78ms，超过 1.75ms 扫描预算；
+ * 7.5MHz 只需 0.44ms，并给 32 片并联总线留出余量。 */
+#define TACTILE_SPI1_PRESCALER        SPI_BAUDRATEPRESCALER_16 /* 120/16 = 7.5MHz */
+#define TACTILE_SPI2_PRESCALER        SPI_BAUDRATEPRESCALER_8  /*  60/8  = 7.5MHz */
 #define TACTILE_SENSOR_PCH_CONFIG    0x40U /* 压力增益32倍，OSR=256 */
 #define TACTILE_SENSOR_TCH_CONFIG    0x80U /* 内部温度，增益1倍，OSR=256 */
+
+/* NSA2302 系统配置寄存器 0xA5，bit7 = DAC_on（1 = Enable voltage output mode）。
+ * 原固件写 0x88 置 DAC_on=1，芯片进入 datasheet 6.3 节的 analog output mode：
+ * 自主执行"64次压力 + 1次温度"转换，且手册明确 "no matter what 'CMD'
+ * registers contents"。该模式不属于 6.5.1 节命令驱动的四种工作模式，
+ * 因此 INT/DRDY 不置位 —— 这正是 fresh_mask 恒为 0 的根因。
+ * 现保持 DAC_on=0：0x08 仅保留 bit3 Regulator_sel=1（VEXT 仍为 2.4V，
+ * 与原来一致，传感器激励与读数标度不变），其余位为 0。 */
+#define TACTILE_SENSOR_SYS_CONFIG    0x08U
+
+/* NSA2302 COMMAND 寄存器 0x30
+ * bit3   = Sco：1 = 启动转换，转换结束自动回 0（睡眠模式除外）
+ * bit2:0 = CMD：000单次温度 001单次传感器 010组合(温度+传感器) 011睡眠周期 */
+#define TACTILE_SENSOR_CMD_REG       0x30U
+#define TACTILE_SENSOR_CMD_SENSOR    0x09U /* Sco=1, CMD=001 单次传感器转换 */
+#define TACTILE_SENSOR_CMD_COMBINED  0x0AU /* Sco=1, CMD=010 组合转换 */
+
+/* 温度刷新周期（以帧计）。单次传感器转换不更新温度寄存器，
+ * 因此每 N 帧改用一次组合转换刷新温度。500Hz 下 64 帧 = 128ms。 */
+#define TACTILE_SENSOR_TEMP_EVERY    64U
+
+/* 连续 N 帧 DRDY 未就绪则补触发一次，防止触发丢失后通道永久卡死。 */
+#define TACTILE_SENSOR_MISS_LIMIT    3U
+
+/* 上电首轮等待所有通道转换完成的上限（微秒）。
+ * 该轮轮询会实测出真实的"触发->DRDY置位"耗时，存入诊断量。 */
+#define TACTILE_SENSOR_PRIME_TIMEOUT_US  20000U
+
 #define TACTILE_SPI_TRANSACTION_US   100U
 #define TACTILE_SWEEP_BUDGET_US      1750U
 #define TACTILE_TX_MAX_LATENESS_US   20U

@@ -8,11 +8,19 @@
 #define NSA_REG_DATA_READY   0x02U
 #define NSA_REG_TEMP_LSB     0x0AU
 #define NSA_DATA_READY       0x01U
-#define NSA_SENSOR_ERRORS   0xFCU
+#define NSA_SENSOR_ERRORS    0xFCU
 
 static int16_t last_temperature[TACTILE_CHANNEL_COUNT];
 static int32_t last_pressure[TACTILE_CHANNEL_COUNT];
 static uint32_t init_failed_mask;
+
+/* 流水线状态。trigger_time_us 记录每通道上次触发时刻，用于测量转换耗时。 */
+static uint32_t trigger_time_us[TACTILE_CHANNEL_COUNT];
+static uint8_t miss_count[TACTILE_CHANNEL_COUNT];
+static uint32_t frame_counter;
+
+/* 调试器可观察的诊断量。 */
+volatile TactileDiag g_tactile_diag;
 
 static int SpiTransfer(uint8_t channel, const uint8_t *tx,
                        uint8_t *rx, uint8_t length)
@@ -106,9 +114,10 @@ static int ReadRegister(uint8_t channel, uint8_t address, uint8_t *value)
 static int ReadMeasurement(uint8_t channel, int16_t *temperature,
                            int32_t *pressure)
 {
-    /* 0xE0: 连续读取；MSB-first 模式从 0x0A 向 0x06 递减地址。 */
+    /* 0xE0: 连续读取（W1:W0=11）；MSB-first 模式从 0x0A 向 0x06 递减地址。
+     * 取 0x0A/0x09 为温度、0x08/0x07/0x06 为压力。 */
     const uint8_t tx[7] = {0xE0U, NSA_REG_TEMP_LSB,
-                          0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU};
+                           0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU};
     uint8_t rx[7];
     uint16_t temp_bits;
     int32_t raw_pressure;
@@ -128,14 +137,94 @@ static int ReadMeasurement(uint8_t channel, int16_t *temperature,
     return 1;
 }
 
+/* 触发一次转换并记录时刻。不等待：转换在帧间隔里自己跑完。 */
+static int TriggerConversion(uint8_t channel, uint8_t command)
+{
+    if (channel >= TACTILE_CHANNEL_COUNT)
+    {
+        return 0;
+    }
+    if (!WriteRegister(channel, TACTILE_SENSOR_CMD_REG, command))
+    {
+        return 0;
+    }
+    trigger_time_us[channel] = TactileTime_NowUs();
+    return 1;
+}
+
+/* 上电首轮：触发全部通道并轮询到就绪。
+ * 这一次轮询是唯一能测得"真实转换时间"的机会（之后 DRDY 读取都晚于转换结束）。 */
+static void PrimeFirstConversion(void)
+{
+    uint8_t channel;
+    uint8_t done[TACTILE_CHANNEL_COUNT];
+    uint32_t started;
+    uint32_t remaining = 0U;
+
+    for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
+    {
+        done[channel] = 1U;
+        if ((init_failed_mask & (UINT32_C(1) << channel)) != 0U)
+        {
+            continue;
+        }
+        done[channel] = 0U;
+        ++remaining;
+        (void)TriggerConversion(channel, TACTILE_SENSOR_CMD_SENSOR);
+    }
+
+    started = TactileTime_NowUs();
+    while (remaining != 0U &&
+           (uint32_t)(TactileTime_NowUs() - started) <
+               TACTILE_SENSOR_PRIME_TIMEOUT_US)
+    {
+        for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
+        {
+            uint8_t ready = 0U;
+            uint32_t elapsed;
+            if (done[channel] != 0U)
+            {
+                continue;
+            }
+            if (!ReadRegister(channel, NSA_REG_DATA_READY, &ready))
+            {
+                continue;
+            }
+            if ((ready & NSA_DATA_READY) == 0U)
+            {
+                continue;
+            }
+            done[channel] = 1U;
+            --remaining;
+            elapsed = (uint32_t)(TactileTime_NowUs() - trigger_time_us[channel]);
+            if (g_tactile_diag.prime_conversion_us == 0U)
+            {
+                g_tactile_diag.prime_conversion_us = elapsed;
+            }
+        }
+    }
+    g_tactile_diag.prime_timeout = (remaining != 0U) ? 1U : 0U;
+}
+
 void TactileSensor_Init(void)
 {
     uint8_t channel;
+
     init_failed_mask = 0U;
+    frame_counter = 0U;
+    g_tactile_diag.prime_conversion_us = 0U;
+    g_tactile_diag.prime_timeout = 0U;
+    g_tactile_diag.total_frames = 0U;
+    g_tactile_diag.full_fresh_frames = 0U;
+    g_tactile_diag.drdy_misses = 0U;
+    g_tactile_diag.retriggers = 0U;
+
     for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
     {
         last_temperature[channel] = TACTILE_INVALID_TEMP;
         last_pressure[channel] = TACTILE_INVALID_PRESSURE;
+        trigger_time_us[channel] = 0U;
+        miss_count[channel] = 0U;
         if (!WriteRegister(channel, NSA_REG_INTERFACE, 0x24U))
         {
             init_failed_mask |= UINT32_C(1) << channel;
@@ -149,14 +238,20 @@ void TactileSensor_Init(void)
         int ok = WriteRegister(channel, NSA_REG_INTERFACE, 0x81U);
         ok &= WriteRegister(channel, 0xA4U, 0x00U);
         /* 先关闭 DAC 连续转换，设置滤波后再启动，避免改配置打断启动。 */
-        ok &= WriteRegister(channel, 0xA5U, 0x08U);
+        ok &= WriteRegister(channel, 0xA5U, TACTILE_SENSOR_SYS_CONFIG);
         ok &= WriteRegister(channel, 0xA6U, TACTILE_SENSOR_PCH_CONFIG);
         ok &= WriteRegister(channel, 0xA7U, TACTILE_SENSOR_TCH_CONFIG);
-        ok &= WriteRegister(channel, 0xA5U, 0x88U);
+
+        /* 关键修正：这里原本再写一次 0xA5 = 0x88，把 bit7 DAC_on 置 1，
+         * 使芯片进入 datasheet 6.3 节的 analog output mode。该模式自主转换、
+         * 忽略 CMD 寄存器，且不驱动 INT/DRDY，导致 fresh_mask 恒为 0。
+         * 现在保持 TACTILE_SENSOR_SYS_CONFIG = 0x08（DAC_on = 0），
+         * 改用 0x30 COMMAND 寄存器触发单次转换。 */
+
         ok &= ReadRegister(channel, NSA_REG_INTERFACE, &readback);
         ok &= (readback & 0x81U) == 0x81U && (readback & 0x66U) == 0U;
         ok &= ReadRegister(channel, 0xA5U, &readback);
-        ok &= readback == 0x88U;
+        ok &= readback == TACTILE_SENSOR_SYS_CONFIG;
         ok &= ReadRegister(channel, 0xA6U, &readback);
         ok &= readback == TACTILE_SENSOR_PCH_CONFIG;
         ok &= ReadRegister(channel, 0xA7U, &readback);
@@ -167,14 +262,25 @@ void TactileSensor_Init(void)
         }
     }
     /* 不再每次上电写0xAA等标定系数，也不触发0x6A/0x6C EEPROM烧写。 */
+
+    /* 启动流水线：先触发一轮并等到就绪，随后每帧"读上一轮、触发下一轮"。 */
+    PrimeFirstConversion();
 }
 
 void TactileSensor_Collect(TactileSample *sample)
 {
     uint8_t channel;
+    uint8_t command;
+
     sample->sample_time_us = TactileTime_NowUs();
     sample->fresh_mask = 0U;
     sample->status = init_failed_mask != 0U ? TACTILE_STATUS_INIT_ERROR : 0U;
+
+    /* 单次传感器转换不更新温度寄存器，周期性改用组合转换刷新温度。 */
+    command = ((frame_counter % TACTILE_SENSOR_TEMP_EVERY) == 0U)
+                  ? TACTILE_SENSOR_CMD_COMBINED
+                  : TACTILE_SENSOR_CMD_SENSOR;
+    ++frame_counter;
 
     for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
     {
@@ -190,6 +296,7 @@ void TactileSensor_Collect(TactileSample *sample)
         {
             continue;
         }
+        /* DRDY 必须在读数据之前取：读 Data_out 会自动清 DRDY。 */
         if (!ReadRegister(channel, NSA_REG_DATA_READY, &ready))
         {
             sample->status |= TACTILE_STATUS_SPI_ERROR;
@@ -200,18 +307,40 @@ void TactileSensor_Collect(TactileSample *sample)
             sample->status |= TACTILE_STATUS_SENSOR_ERROR;
             continue;
         }
-        /* DRDY=0 也读取寄存器值，避免连续 DAC 模式下永远输出启动哨兵。
-         * 没有 DRDY 证据的读取仍标为 fresh=0，绝不把重复读当新转换。 */
-        if (!ReadMeasurement(channel, &last_temperature[channel],
-                             &last_pressure[channel]))
-        {
-            sample->status |= TACTILE_STATUS_SPI_ERROR;
-            continue;
-        }
+
         if ((ready & NSA_DATA_READY) != 0U)
         {
+            /* 转换已完成且数据未被读过：这是货真价实的新数据。 */
+            if (!ReadMeasurement(channel, &last_temperature[channel],
+                                 &last_pressure[channel]))
+            {
+                sample->status |= TACTILE_STATUS_SPI_ERROR;
+                continue;
+            }
             sample->fresh_mask |= mask;
+            miss_count[channel] = 0U;
+            /* 读完立刻触发下一轮，转换在帧间隔里跑，不占用扫描预算。 */
+            (void)TriggerConversion(channel, command);
         }
+        else
+        {
+            /* 转换未完成。按 datasheet 6.5.1 的要求不读正在刷新的 Data_out，
+             * 保留上次数值，等下一帧。 */
+            ++g_tactile_diag.drdy_misses;
+            ++miss_count[channel];
+            if (miss_count[channel] >= TACTILE_SENSOR_MISS_LIMIT)
+            {
+                (void)TriggerConversion(channel, command);
+                ++g_tactile_diag.retriggers;
+                miss_count[channel] = 0U;
+            }
+        }
+    }
+
+    ++g_tactile_diag.total_frames;
+    if (sample->fresh_mask == TACTILE_CHANNEL_MASK)
+    {
+        ++g_tactile_diag.full_fresh_frames;
     }
     if (sample->fresh_mask != TACTILE_CHANNEL_MASK)
     {

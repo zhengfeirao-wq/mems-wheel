@@ -155,6 +155,17 @@ finally:
 证明数据有效。**USB 拔插不会改变该状态**（已实测验证：仅 CH340 重新枚举，
 MCU 未复位，DRDY 行为不变）。
 
+**根因（2026-09-11 查明）**：原固件初始化末尾写 `0xA5 = 0x88`，把 bit7 `DAC_on` 置 1。
+按 NSA2302 datasheet Rev1.2 第 11 页，该位为 *Enable voltage output mode*；第 17 页 6.3 节说明
+`DAC_on=1` 即进入 **analog output mode**（"no matter what 'CMD' registers contents"），
+自主执行 64 次压力 + 1 次温度转换；而第 18–19 页 6.5.1 节的 INT/DRDY 行为只在
+**命令驱动**的四种工作模式下定义。该模式不属于其中，故 DRDY 永不置位。
+
+**修复固件**：`firmware_tactile500/烧录_DRDY修复_20260911/`。保持 `DAC_on=0`，
+改用 `0x30` COMMAND 寄存器触发单次转换，并做流水线采集（读完即触发下一轮，
+转换在帧间隔内完成）；SPI 由 1.875 MHz 提至 7.5 MHz（手册上限 10 MHz）。
+协议与上位机均无需改动。**该修复尚待实物验证。**
+
 ### 2. 通道存在偶发满量程跳变
 
 左手 12 点板（`identity 0x08`）的 **ch6** 出现 `±943718` 的跳变
