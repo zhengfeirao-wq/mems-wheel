@@ -21,8 +21,14 @@
 │   ├── Include/              配置与头文件
 │   ├── Config/               DAL 板级配置
 │   ├── Project/              Keil 工程（6 个板型 Target）
-│   └── docs/                 协议 V2、板型通道表
+│   ├── docs/                 协议 V2、板型通道表
+│   └── 烧录_OSR256_20260910/ 该档 OSR256 固件的 HEX 交付物与构建清单
 │
+├── outline/                  结构与点位
+│   ├── 2d_sampling_points/   12 / 32 点传感器平面坐标（常量模块 + 原始 CSV + 坐标图）
+│   └── 3d_structure/         夹爪三维结构（STEP / Blender / 可编辑预览 / 点位源）
+│
+├── docs/                     跨子项目文档
 ├── README_当前版本.md        版本入口索引
 └── 今晚测试入口_嵌入式与wheel.md
 ```
@@ -84,7 +90,7 @@ UART   = 921600 8N1     帧率     = 500 Hz（周期 2 ms）
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.3.0
+.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.4.2
 
 .venv/bin/tactile500 scan                      # 只枚举，不打开设备
 .venv/bin/tactile500 probe --seconds 30        # 收帧并报告实际速率
@@ -229,7 +235,7 @@ python -m pytest -q
 ```bash
 cd ~
 python3 -m venv .venv
-.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.3.0
+.venv/bin/python -m pip install --no-index --find-links wheelhouse tactile500==0.4.2
 
 .venv/bin/tactile500 scan
 .venv/bin/tactile500 view --bind 0.0.0.0 --port 8875 --output-root captures
