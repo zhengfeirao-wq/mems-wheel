@@ -59,13 +59,18 @@
 #define TACTILE_MAPPING_REVISION     1U
 #define TACTILE_WIRE_VERSION         0x21U /* 协议主版本 2，固件修订 1。 */
 
-/* 2026-09-11：SPI 从 1.875MHz 提到 7.5MHz。
+/* 2026-09-11：SPI 从 1.875MHz 提到 3.75MHz。
  * 依据 NSA2302 datasheet Rev1.2 Table 7.2：f_sclk 上限 10MHz（负载25pF）。
  * 提速原因：改为命令驱动单次转换后每帧要额外写 0x30 触发寄存器，
  * 每帧SPI字节数 320 -> 416。1.875MHz 需 1.78ms，超过 1.75ms 扫描预算；
- * 7.5MHz 只需 0.44ms，并给 32 片并联总线留出余量。 */
-#define TACTILE_SPI1_PRESCALER        SPI_BAUDRATEPRESCALER_16 /* 120/16 = 7.5MHz */
-#define TACTILE_SPI2_PRESCALER        SPI_BAUDRATEPRESCALER_8  /*  60/8  = 7.5MHz */
+ * 3.75MHz 只需 0.89ms，留出约一半余量。
+ *
+ * 实测记录：先按 7.5MHz 试过一版，初始化回读校验在 SPI1 侧通道
+ * （channel < COUNT/2）成片失败，判定为 32 片并联总线在该速率下
+ * 信号完整性不足。降到 3.75MHz（仍为原速 2 倍）后应消除。
+ * 若仍失败，看 g_tactile_diag.init_a5_rb[] / init_fail_mask 定位。 */
+#define TACTILE_SPI1_PRESCALER        SPI_BAUDRATEPRESCALER_32 /* 120/32 = 3.75MHz */
+#define TACTILE_SPI2_PRESCALER        SPI_BAUDRATEPRESCALER_16 /*  60/16 = 3.75MHz */
 #define TACTILE_SENSOR_PCH_CONFIG    0x40U /* 压力增益32倍，OSR=256 */
 #define TACTILE_SENSOR_TCH_CONFIG    0x80U /* 内部温度，增益1倍，OSR=256 */
 

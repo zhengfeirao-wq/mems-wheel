@@ -234,7 +234,10 @@ void TactileSensor_Init(void)
 
     for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
     {
-        uint8_t readback = 0U;
+        uint8_t iface_rb = 0U;
+        uint8_t a5_rb = 0U;
+        uint8_t a6_rb = 0U;
+        uint8_t a7_rb = 0U;
         int ok = WriteRegister(channel, NSA_REG_INTERFACE, 0x81U);
         ok &= WriteRegister(channel, 0xA4U, 0x00U);
         /* 先关闭 DAC 连续转换，设置滤波后再启动，避免改配置打断启动。 */
@@ -248,19 +251,26 @@ void TactileSensor_Init(void)
          * 现在保持 TACTILE_SENSOR_SYS_CONFIG = 0x08（DAC_on = 0），
          * 改用 0x30 COMMAND 寄存器触发单次转换。 */
 
-        ok &= ReadRegister(channel, NSA_REG_INTERFACE, &readback);
-        ok &= (readback & 0x81U) == 0x81U && (readback & 0x66U) == 0U;
-        ok &= ReadRegister(channel, 0xA5U, &readback);
-        ok &= readback == TACTILE_SENSOR_SYS_CONFIG;
-        ok &= ReadRegister(channel, 0xA6U, &readback);
-        ok &= readback == TACTILE_SENSOR_PCH_CONFIG;
-        ok &= ReadRegister(channel, 0xA7U, &readback);
-        ok &= readback == TACTILE_SENSOR_TCH_CONFIG;
+        /* 逐项回读并留存，失败时可在调试器直接比对期望值。 */
+        ok &= ReadRegister(channel, NSA_REG_INTERFACE, &iface_rb);
+        ok &= ReadRegister(channel, 0xA5U, &a5_rb);
+        ok &= ReadRegister(channel, 0xA6U, &a6_rb);
+        ok &= ReadRegister(channel, 0xA7U, &a7_rb);
+        g_tactile_diag.init_iface_rb[channel] = iface_rb;
+        g_tactile_diag.init_a5_rb[channel] = a5_rb;
+        g_tactile_diag.init_a6_rb[channel] = a6_rb;
+        g_tactile_diag.init_a7_rb[channel] = a7_rb;
+
+        ok &= (iface_rb & 0x81U) == 0x81U && (iface_rb & 0x66U) == 0U;
+        ok &= a5_rb == TACTILE_SENSOR_SYS_CONFIG;
+        ok &= a6_rb == TACTILE_SENSOR_PCH_CONFIG;
+        ok &= a7_rb == TACTILE_SENSOR_TCH_CONFIG;
         if (!ok)
         {
             init_failed_mask |= UINT32_C(1) << channel;
         }
     }
+    g_tactile_diag.init_fail_mask = init_failed_mask;
     /* 不再每次上电写0xAA等标定系数，也不触发0x6A/0x6C EEPROM烧写。 */
 
     /* 启动流水线：先触发一轮并等到就绪，随后每帧"读上一轮、触发下一轮"。 */
