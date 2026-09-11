@@ -1,0 +1,50 @@
+[
+  {
+    "file": "cad\\12\\Silicone_cap.step",
+    "valid": true,
+    "solids": 1,
+    "volume_mm3": 1784.5387278121734,
+    "flat_start_y_mm": 21.3,
+    "flat_end_y_mm": 40.64965665536968,
+    "flat_outer_z_mm": 0.20000000000000018,
+    "flat_surface_type": "PLANE",
+    "flatness_section_samples": 31,
+    "max_flatness_error_mm": 9.999999989185326e-08
+  },
+  {
+    "file": "cad\\12\\gripper-12-assembled.step",
+    "valid": true,
+    "solids": 81,
+    "volume_mm3": 12331.438336056326
+  },
+  {
+    "file": "cad\\12\\gripper-12-exploded.step",
+    "valid": true,
+    "solids": 81,
+    "volume_mm3": 12331.042038753372
+  },
+  {
+    "file": "cad\\32\\Silicone_cap.step",
+    "valid": true,
+    "solids": 1,
+    "volume_mm3": 4497.030614688018,
+    "flat_start_y_mm": 21.3,
+    "flat_end_y_mm": 41.13052286528986,
+    "flat_outer_z_mm": 0.20000000000000018,
+    "flat_surface_type": "PLANE",
+    "flatness_section_samples": 31,
+    "max_flatness_error_mm": 9.999999989185326e-08
+  },
+  {
+    "file": "cad\\32\\gripper-32-assembled.step",
+    "valid": true,
+    "solids": 183,
+    "volume_mm3": 29272.181503581545
+  },
+  {
+    "file": "cad\\32\\gripper-32-exploded.step",
+    "valid": true,
+    "solids": 183,
+    "volume_mm3": 29273.975175986754
+  }
+]

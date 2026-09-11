@@ -1,0 +1,38 @@
+{
+  "blender_version": "5.2.1 LTS",
+  "mesh_sha256": "3e348471adc67d7a194c34e6802d8477b6705c6e58376c28a19f96eacc9da80a",
+  "millimeter_scene_checked": true,
+  "models": [
+    {
+      "component_count": 23,
+      "max_vertex_error_mm": 1.8610954271025548e-06,
+      "max_explode_error_mm": 1.519918441772461e-06,
+      "explode_values_checked": [
+        0,
+        0.8,
+        1
+      ],
+      "channel": 12,
+      "blend_roundtrip": true,
+      "glb_roundtrip": true,
+      "glb_bounds_error_m": 0.0,
+      "existing_scene_preserved": true
+    },
+    {
+      "component_count": 43,
+      "max_vertex_error_mm": 1.8600940734359028e-06,
+      "max_explode_error_mm": 1.519918441772461e-06,
+      "explode_values_checked": [
+        0,
+        0.8,
+        1
+      ],
+      "channel": 32,
+      "blend_roundtrip": true,
+      "glb_roundtrip": true,
+      "glb_bounds_error_m": 0.0,
+      "existing_scene_preserved": true
+    }
+  ],
+  "solidworks_live_tested": false
+}

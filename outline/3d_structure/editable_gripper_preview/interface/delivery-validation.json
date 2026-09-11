@@ -1,0 +1,12 @@
+{
+  "revision": "2026-09-08-csv-relative-layout",
+  "mesh_sha256": "3e348471adc67d7a194c34e6802d8477b6705c6e58376c28a19f96eacc9da80a",
+  "source_hashes_verified": true,
+  "portable_paths_verified": true,
+  "coordinate_and_unit_conversions_verified": true,
+  "csv_pairwise_xy_distances_verified": true,
+  "straight_wire_geometry_verified": true,
+  "blender_roundtrips_verified": true,
+  "html_api_verified_by": "verify_preview.cjs",
+  "solidworks_live_tested": false
+}

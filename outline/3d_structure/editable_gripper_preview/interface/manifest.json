@@ -1,0 +1,1087 @@
+{
+  "schema_version": 1,
+  "revision": "2026-09-08-csv-relative-layout",
+  "asset_root": ".. (relative to this manifest)",
+  "units": "mm",
+  "coordinate_system": "original STEP XYZ, right-handed",
+  "mesh_file": "mesh-data.json",
+  "mesh_sha256": "3e348471adc67d7a194c34e6802d8477b6705c6e58376c28a19f96eacc9da80a",
+  "preview_html": "gripper-preview.html",
+  "preview_default": {
+    "channel": 32,
+    "explode": 0.8,
+    "roof_up": true
+  },
+  "preview_to_cad": {
+    "matrix_row_major": [
+      -1,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      14,
+      0,
+      0,
+      1,
+      -12,
+      0,
+      0,
+      0,
+      1
+    ],
+    "description": "CAD = (-preview.x, 14-preview.y, preview.z-12)"
+  },
+  "source_manual": "../自适应通用夹爪传感器说明书.pdf",
+  "reference_pcb": "reference-pcb.png",
+  "limitations": [
+    "Electronic placement and nominal silicone thickness are illustrative assumptions.",
+    "STEP contains named bodies/components, not original SolidWorks feature history.",
+    "Blender and GLB are tessellated geometry; use STEP for CAD surfaces."
+  ],
+  "models": {
+    "12": {
+      "coordinate_source": {
+        "file": "coordinates/coord_Small_raw.csv",
+        "sha256": "8bac68b0fdcc92e61ad1de66146b5601073cc0fb7436081c5a3cdb014cfb7dee",
+        "scale_mm_per_source_unit": 1.0,
+        "translation_cad_xy_mm": [
+          -111.5282,
+          -67.5546
+        ],
+        "xy_mapping": "CAD.xy = source.xy * uniform_scale + translation; no mirroring or snapping",
+        "registration_note": "CSV units and absolute CAD registration unconfirmed; display assumes 1 source unit = 1 mm."
+      },
+      "channel": 12,
+      "component_count": 23,
+      "source_step": "../onebody-12-jiegoujian.STEP",
+      "source_sha256": "40caff32f81e39f77d3f788978ce0b8fd3d8f2970e3b558bfa49daa2fe9d8142",
+      "step": {
+        "assembled": "cad/12/gripper-12-assembled.step",
+        "exploded": "cad/12/gripper-12-exploded.step"
+      },
+      "blender": "blender/gripper-12.blend",
+      "glb": "blender/gripper-12.glb",
+      "glb_coordinates": "glTF Y-up, meters; standard Blender exporter conversion from CAD XYZ",
+      "parts": [
+        {
+          "id": "Structural_body",
+          "name": "结构主体",
+          "category": "body",
+          "mesh_index": 0,
+          "color_srgb": "#a8aaa0",
+          "step_component_name": "Structural_body",
+          "step_file": "cad/12/Structural_body.step",
+          "explode_translation_cad_mm": [
+            0,
+            0,
+            0
+          ],
+          "note": "原始 STEP 中的主体实体，未重画。"
+        },
+        {
+          "id": "Source_cover",
+          "name": "原始第二结构实体",
+          "category": "cover",
+          "mesh_index": 1,
+          "color_srgb": "#bfc0b6",
+          "step_component_name": "Source_cover",
+          "step_file": "cad/12/Source_cover.step",
+          "explode_translation_cad_mm": [
+            0,
+            0,
+            -17
+          ],
+          "note": "原始 STEP 中的第二实体；具体实物名称待确认。"
+        },
+        {
+          "id": "Silicone_cap",
+          "name": "黄色硅胶封装",
+          "category": "silicone",
+          "mesh_index": 2,
+          "color_srgb": "#dcae32",
+          "step_component_name": "Silicone_cap",
+          "step_file": "cad/12/Silicone_cap.step",
+          "explode_translation_cad_mm": [
+            28,
+            0,
+            52
+          ],
+          "note": "新增独立包覆实体；上部随形，下部至末端的外表面为平面。名义厚度 2.2 mm 为假设，轮廓按原结构截面向内收边。"
+        },
+        {
+          "id": "PCB_illustrative",
+          "name": "PCB 板示意",
+          "category": "pcb",
+          "mesh_index": 3,
+          "color_srgb": "#18765c",
+          "step_component_name": "PCB_illustrative",
+          "step_file": "cad/12/PCB_illustrative.step",
+          "explode_translation_cad_mm": [
+            5,
+            0,
+            17
+          ],
+          "note": "条带根据 CSV 实际点位布置；桥接、板宽和绝对安装位置仍为示意。"
+        },
+        {
+          "id": "Solder_pads_illustrative",
+          "name": "焊盘示意",
+          "category": "pcb",
+          "mesh_index": 4,
+          "color_srgb": "#c2a355",
+          "step_component_name": "Solder_pads_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            5,
+            0,
+            17
+          ],
+          "note": "焊盘细节示意，未按实际封装校核。"
+        },
+        {
+          "id": "Connector_illustrative",
+          "name": "连接器示意",
+          "category": "connector",
+          "mesh_index": 5,
+          "color_srgb": "#ddd6be",
+          "step_component_name": "Connector_illustrative",
+          "step_file": "cad/12/Connector_illustrative.step",
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "插座外包络示意；未建供应商精确型号。"
+        },
+        {
+          "id": "Connector_pins_illustrative",
+          "name": "端子示意",
+          "category": "connector",
+          "mesh_index": 6,
+          "color_srgb": "#b8a266",
+          "step_component_name": "Connector_pins_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "端子示意，非制造定义。"
+        },
+        {
+          "id": "Sensor_01_illustrative",
+          "name": "传感器件 01 示意",
+          "category": "sensors",
+          "mesh_index": 7,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_01_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [105.8507, 101.0546]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_02_illustrative",
+          "name": "传感器件 02 示意",
+          "category": "sensors",
+          "mesh_index": 8,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_02_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [111.5158, 101.0546]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_03_illustrative",
+          "name": "传感器件 03 示意",
+          "category": "sensors",
+          "mesh_index": 9,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_03_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [117.2057, 101.0546]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_04_illustrative",
+          "name": "传感器件 04 示意",
+          "category": "sensors",
+          "mesh_index": 10,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_04_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [105.8507, 95.1531]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_05_illustrative",
+          "name": "传感器件 05 示意",
+          "category": "sensors",
+          "mesh_index": 11,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_05_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [111.5158, 95.1531]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_06_illustrative",
+          "name": "传感器件 06 示意",
+          "category": "sensors",
+          "mesh_index": 12,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_06_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [117.2057, 95.1531]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_07_illustrative",
+          "name": "传感器件 07 示意",
+          "category": "sensors",
+          "mesh_index": 13,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_07_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [106.9069, 83.8797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_08_illustrative",
+          "name": "传感器件 08 示意",
+          "category": "sensors",
+          "mesh_index": 14,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_08_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [116.1473, 83.8797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_09_illustrative",
+          "name": "传感器件 09 示意",
+          "category": "sensors",
+          "mesh_index": 15,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_09_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [106.9069, 77.4569]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_10_illustrative",
+          "name": "传感器件 10 示意",
+          "category": "sensors",
+          "mesh_index": 16,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_10_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [116.1473, 77.4569]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_11_illustrative",
+          "name": "传感器件 11 示意",
+          "category": "sensors",
+          "mesh_index": 17,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_11_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [106.9088, 71.1163]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_12_illustrative",
+          "name": "传感器件 12 示意",
+          "category": "sensors",
+          "mesh_index": 18,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_12_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [116.1473, 71.1159]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Wire_1_illustrative",
+          "name": "导线 1 示意",
+          "category": "wires",
+          "mesh_index": 19,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_1_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_2_illustrative",
+          "name": "导线 2 示意",
+          "category": "wires",
+          "mesh_index": 20,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_2_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_3_illustrative",
+          "name": "导线 3 示意",
+          "category": "wires",
+          "mesh_index": 21,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_3_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_4_illustrative",
+          "name": "导线 4 示意",
+          "category": "wires",
+          "mesh_index": 22,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_4_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        }
+      ]
+    },
+    "32": {
+      "coordinate_source": {
+        "file": "coordinates/coord_Big_raw.csv",
+        "sha256": "71dec34cf0a3b85e6d69706c78d1e743b504f07d456621e8acd41dcebd4176ce",
+        "scale_mm_per_source_unit": 1.0,
+        "translation_cad_xy_mm": [
+          -148.76170000000002,
+          -49.74209999999999
+        ],
+        "xy_mapping": "CAD.xy = source.xy * uniform_scale + translation; no mirroring or snapping",
+        "registration_note": "CSV units and absolute CAD registration unconfirmed; display assumes 1 source unit = 1 mm."
+      },
+      "channel": 32,
+      "component_count": 43,
+      "source_step": "../onebody-32-jiegoujian.STEP",
+      "source_sha256": "aefdec304b752d972265b46f28778a74c33d1fed419eb38fee8c029a2f97c92e",
+      "step": {
+        "assembled": "cad/32/gripper-32-assembled.step",
+        "exploded": "cad/32/gripper-32-exploded.step"
+      },
+      "blender": "blender/gripper-32.blend",
+      "glb": "blender/gripper-32.glb",
+      "glb_coordinates": "glTF Y-up, meters; standard Blender exporter conversion from CAD XYZ",
+      "parts": [
+        {
+          "id": "Structural_body",
+          "name": "结构主体",
+          "category": "body",
+          "mesh_index": 0,
+          "color_srgb": "#a8aaa0",
+          "step_component_name": "Structural_body",
+          "step_file": "cad/32/Structural_body.step",
+          "explode_translation_cad_mm": [
+            0,
+            0,
+            0
+          ],
+          "note": "原始 STEP 中的主体实体，未重画。"
+        },
+        {
+          "id": "Source_cover",
+          "name": "原始第二结构实体",
+          "category": "cover",
+          "mesh_index": 1,
+          "color_srgb": "#bfc0b6",
+          "step_component_name": "Source_cover",
+          "step_file": "cad/32/Source_cover.step",
+          "explode_translation_cad_mm": [
+            0,
+            0,
+            -17
+          ],
+          "note": "原始 STEP 中的第二实体；具体实物名称待确认。"
+        },
+        {
+          "id": "Silicone_cap",
+          "name": "黄色硅胶封装",
+          "category": "silicone",
+          "mesh_index": 2,
+          "color_srgb": "#dcae32",
+          "step_component_name": "Silicone_cap",
+          "step_file": "cad/32/Silicone_cap.step",
+          "explode_translation_cad_mm": [
+            28,
+            0,
+            52
+          ],
+          "note": "新增独立包覆实体；上部随形，下部至末端的外表面为平面。名义厚度 2.2 mm 为假设，轮廓按原结构截面向内收边。"
+        },
+        {
+          "id": "PCB_illustrative",
+          "name": "PCB 板示意",
+          "category": "pcb",
+          "mesh_index": 3,
+          "color_srgb": "#18765c",
+          "step_component_name": "PCB_illustrative",
+          "step_file": "cad/32/PCB_illustrative.step",
+          "explode_translation_cad_mm": [
+            5,
+            0,
+            17
+          ],
+          "note": "条带根据 CSV 实际点位布置；桥接、板宽和绝对安装位置仍为示意。"
+        },
+        {
+          "id": "Solder_pads_illustrative",
+          "name": "焊盘示意",
+          "category": "pcb",
+          "mesh_index": 4,
+          "color_srgb": "#c2a355",
+          "step_component_name": "Solder_pads_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            5,
+            0,
+            17
+          ],
+          "note": "焊盘细节示意，未按实际封装校核。"
+        },
+        {
+          "id": "Connector_illustrative",
+          "name": "连接器示意",
+          "category": "connector",
+          "mesh_index": 5,
+          "color_srgb": "#ddd6be",
+          "step_component_name": "Connector_illustrative",
+          "step_file": "cad/32/Connector_illustrative.step",
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "插座外包络示意；未建供应商精确型号。"
+        },
+        {
+          "id": "Connector_pins_illustrative",
+          "name": "端子示意",
+          "category": "connector",
+          "mesh_index": 6,
+          "color_srgb": "#b8a266",
+          "step_component_name": "Connector_pins_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "端子示意，非制造定义。"
+        },
+        {
+          "id": "Sensor_01_illustrative",
+          "name": "传感器件 01 示意",
+          "category": "sensors",
+          "mesh_index": 7,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_01_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [127.531, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_02_illustrative",
+          "name": "传感器件 02 示意",
+          "category": "sensors",
+          "mesh_index": 8,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_02_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [136.042, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_03_illustrative",
+          "name": "传感器件 03 示意",
+          "category": "sensors",
+          "mesh_index": 9,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_03_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [144.1886, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_04_illustrative",
+          "name": "传感器件 04 示意",
+          "category": "sensors",
+          "mesh_index": 10,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_04_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [153.1277, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_05_illustrative",
+          "name": "传感器件 05 示意",
+          "category": "sensors",
+          "mesh_index": 11,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_05_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [161.567, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_06_illustrative",
+          "name": "传感器件 06 示意",
+          "category": "sensors",
+          "mesh_index": 12,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_06_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [169.9924, 69.296]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_07_illustrative",
+          "name": "传感器件 07 示意",
+          "category": "sensors",
+          "mesh_index": 13,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_07_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [166.2893, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_08_illustrative",
+          "name": "传感器件 08 示意",
+          "category": "sensors",
+          "mesh_index": 14,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_08_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [160.3704, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_09_illustrative",
+          "name": "传感器件 09 示意",
+          "category": "sensors",
+          "mesh_index": 15,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_09_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [154.439, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_10_illustrative",
+          "name": "传感器件 10 示意",
+          "category": "sensors",
+          "mesh_index": 16,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_10_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [148.9074, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_11_illustrative",
+          "name": "传感器件 11 示意",
+          "category": "sensors",
+          "mesh_index": 17,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_11_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [143.1525, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_12_illustrative",
+          "name": "传感器件 12 示意",
+          "category": "sensors",
+          "mesh_index": 18,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_12_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [137.1624, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_13_illustrative",
+          "name": "传感器件 13 示意",
+          "category": "sensors",
+          "mesh_index": 19,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_13_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [131.48, 78.1269]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_14_illustrative",
+          "name": "传感器件 14 示意",
+          "category": "sensors",
+          "mesh_index": 20,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_14_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [127.531, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_15_illustrative",
+          "name": "传感器件 15 示意",
+          "category": "sensors",
+          "mesh_index": 21,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_15_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [136.042, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_16_illustrative",
+          "name": "传感器件 16 示意",
+          "category": "sensors",
+          "mesh_index": 22,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_16_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [148.9775, 83.2421]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_17_illustrative",
+          "name": "传感器件 17 示意",
+          "category": "sensors",
+          "mesh_index": 23,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_17_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [127.531, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_18_illustrative",
+          "name": "传感器件 18 示意",
+          "category": "sensors",
+          "mesh_index": 24,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_18_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [136.042, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_19_illustrative",
+          "name": "传感器件 19 示意",
+          "category": "sensors",
+          "mesh_index": 25,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_19_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [144.1886, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_20_illustrative",
+          "name": "传感器件 20 示意",
+          "category": "sensors",
+          "mesh_index": 26,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_20_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [153.1277, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_21_illustrative",
+          "name": "传感器件 21 示意",
+          "category": "sensors",
+          "mesh_index": 27,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_21_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [161.567, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_22_illustrative",
+          "name": "传感器件 22 示意",
+          "category": "sensors",
+          "mesh_index": 28,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_22_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [169.9924, 55.6552]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_23_illustrative",
+          "name": "传感器件 23 示意",
+          "category": "sensors",
+          "mesh_index": 29,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_23_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [169.9924, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_24_illustrative",
+          "name": "传感器件 24 示意",
+          "category": "sensors",
+          "mesh_index": 30,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_24_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [161.567, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_25_illustrative",
+          "name": "传感器件 25 示意",
+          "category": "sensors",
+          "mesh_index": 31,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_25_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [153.1277, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_26_illustrative",
+          "name": "传感器件 26 示意",
+          "category": "sensors",
+          "mesh_index": 32,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_26_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [144.1886, 64.6302]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_27_illustrative",
+          "name": "传感器件 27 示意",
+          "category": "sensors",
+          "mesh_index": 33,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_27_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [169.9924, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_28_illustrative",
+          "name": "传感器件 28 示意",
+          "category": "sensors",
+          "mesh_index": 34,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_28_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [161.567, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_29_illustrative",
+          "name": "传感器件 29 示意",
+          "category": "sensors",
+          "mesh_index": 35,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_29_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [153.1277, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_30_illustrative",
+          "name": "传感器件 30 示意",
+          "category": "sensors",
+          "mesh_index": 36,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_30_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [144.1886, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_31_illustrative",
+          "name": "传感器件 31 示意",
+          "category": "sensors",
+          "mesh_index": 37,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_31_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [136.042, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Sensor_32_illustrative",
+          "name": "传感器件 32 示意",
+          "category": "sensors",
+          "mesh_index": 38,
+          "color_srgb": "#39424b",
+          "step_component_name": "Sensor_32_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            14,
+            0,
+            32
+          ],
+          "note": "XY 相对位置来自 CSV [127.531, 60.1797]；编号只标识来源。Z 与封装尺寸仍为示意。"
+        },
+        {
+          "id": "Wire_1_illustrative",
+          "name": "导线 1 示意",
+          "category": "wires",
+          "mesh_index": 39,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_1_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_2_illustrative",
+          "name": "导线 2 示意",
+          "category": "wires",
+          "mesh_index": 40,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_2_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_3_illustrative",
+          "name": "导线 3 示意",
+          "category": "wires",
+          "mesh_index": 41,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_3_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        },
+        {
+          "id": "Wire_4_illustrative",
+          "name": "导线 4 示意",
+          "category": "wires",
+          "mesh_index": 42,
+          "color_srgb": "#2d3437",
+          "step_component_name": "Wire_4_illustrative",
+          "step_file": null,
+          "explode_translation_cad_mm": [
+            -12,
+            0,
+            -24
+          ],
+          "note": "柔性导线，以伸直状态展示；长度为示意参数。"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>触觉夹爪 · 可拆分三维预览</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5f2;color:#252b30;font-family:Arial,"Microsoft YaHei",sans-serif}button,input{font:inherit}button{cursor:pointer}header{padding:26px 34px 20px;border-bottom:1px solid #d8dcda;display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:24px;font-weight:600;margin:6px 0 0}.eyebrow{font-size:11px;letter-spacing:2px;color:#6b7678}.tag{font-size:12px;color:#69685b;background:#eae8dc;padding:9px 12px;border-radius:4px}.layout{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:650px}aside{padding:26px;border-right:1px solid #d8dcda;background:#fafaf7}.section{margin-bottom:25px}.section h2{font-size:12px;letter-spacing:1px;color:#6c7477;font-weight:500;margin:0 0 12px}.seg{display:flex;gap:4px;background:#e9ece8;border-radius:6px;padding:4px}.seg button{border:0;background:transparent;padding:10px 8px;flex:1;border-radius:4px;color:#4e585a}.seg button[aria-pressed=true]{background:#fff;color:#1e3638;box-shadow:0 1px 3px #0001}.measure{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}input[type=range]{width:100%;accent-color:#af872b}input[type=checkbox]{accent-color:#af872b}.check{display:flex;align-items:center;gap:9px;min-height:33px;font-size:13px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%}.note{font-size:12px;line-height:1.8;color:#687175;margin:8px 0}.action{background:#273f41;border:0;color:#fff;padding:11px 14px;width:100%;border-radius:5px}.stage{position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 45% 40%,#fff 0%,#f0f2ef 85%)}#viewport{height:650px;width:100%;touch-action:none;outline-offset:-4px}#viewport canvas{display:block;width:100%;height:100%}.stage-top{position:absolute;top:24px;left:28px;pointer-events:none}.stage-top h2{font-size:18px;font-weight:500;margin:0 0 6px}.stage-top p{font-size:12px;margin:0;color:#778081}.views{position:absolute;right:22px;top:24px;display:flex;gap:6px}.views button{border:1px solid #d5dcda;background:#fffffff0;color:#4b595c;padding:8px 12px;border-radius:4px;font-size:12px}.stage-foot{position:absolute;bottom:20px;left:28px;right:24px;display:flex;justify-content:space-between;gap:20px;font-size:11px;color:#707b7d;pointer-events:none}#labels{position:absolute;inset:0;pointer-events:none}.part-label{position:absolute;white-space:nowrap;font-size:11px;padding:5px 8px;border:1px solid #d4dbd5;background:#fffffff0;border-radius:3px;transform:translate(10px,-50%);color:#4c575b}.part-label::before{content:"";position:absolute;left:-10px;top:50%;width:10px;border-top:1px solid #8c999a}footer{padding:15px 34px;border-top:1px solid #d8dcda;display:flex;justify-content:space-between;gap:20px;font-size:12px;color:#6c7779}footer a{color:#3e6263}.error{position:absolute;inset:120px 40px auto;background:white;padding:25px;color:#972d21}#selected{min-height:40px;color:#46575a;font-size:12px;line-height:1.7}.reference{margin:0 34px 30px;max-width:950px}details{border-top:1px solid #d8dcda;padding:14px 0}summary{font-size:13px;cursor:pointer}details p,details li{font-size:12px;color:#677477;line-height:1.8}details img{max-width:100%;max-height:430px;display:block;margin-top:15px}button:focus-visible{outline:2px solid #b48b32;outline-offset:3px}@media(max-width:760px){header{padding:20px;align-items:flex-start}h1{font-size:19px}.tag{max-width:120px;line-height:1.5}.layout{grid-template-columns:1fr}aside{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px;border-right:0;border-bottom:1px solid #d8dcda}.section{margin:0}.section:last-child{grid-column:1/-1}.stage-top{left:16px;top:18px}.views{top:72px;right:16px}#viewport{height:540px}.stage-foot{left:16px;right:16px}.part-label{font-size:10px}.reference{margin:0 20px 20px}footer{padding:16px 20px;flex-wrap:wrap}}@media(max-width:380px){aside{gap:12px;padding:14px}.check{font-size:12px}.stage-top h2{font-size:16px}.views button{padding:7px 9px}}
+@media(min-width:761px){.stage{min-height:860px}#viewport{height:860px}}#leader-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.part-label::before{display:none}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">TACTILE MODULE / STRUCTURE STUDY 01</div><h1>触觉夹爪 · 分层结构预览</h1></div><div class="tag">讨论稿 · 内部结构含示意</div></header>
+<main class="layout">
+<aside>
+<div class="section"><h2>模块型号</h2><div class="seg" id="models"><button type="button" data-model="12" aria-pressed="false">12 通道</button><button type="button" data-model="32" aria-pressed="true">32 通道</button></div></div>
+<div class="section"><h2>装配 / 爆炸</h2><label class="measure" for="explode"><span>分离程度</span><output id="explode-value">80%</output></label><input id="explode" type="range" min="0" max="100" value="80"><div class="note">0% 装配状态 · 100% 完全展开</div></div>
+<div class="section"><h2>零件显示</h2><div id="visibility"></div></div>
+<div class="section"><h2>黄色硅胶</h2><label class="measure" for="opacity"><span>不透明度</span><output id="opacity-value">100%</output></label><input id="opacity" type="range" min="15" max="100" value="100"><p class="note">独立包覆件，接触面外轮廓来自原结构件。厚度为初版假设。</p></div>
+<div class="section"><label class="check"><input type="checkbox" id="show-labels" checked>零件标注</label><div id="selected" aria-live="polite">点击零件查看来源和假设。</div><button type="button" id="save-image" class="action">导出当前视角 PNG</button></div>
+</aside>
+<section class="stage"><div id="viewport" tabindex="0" role="img" aria-label="可旋转的夹爪三维模型，使用方向键旋转，加减键缩放"></div><svg id="leader-lines" aria-hidden="true"></svg><div id="labels"></div><div class="stage-top"><h2 id="model-title">32 通道模块</h2><p id="model-size"></p></div><div class="views"><button type="button" data-view="iso">轴测</button><button type="button" data-view="front">正面</button><button type="button" data-view="back">背面</button><button type="button" data-view="side">侧面</button></div><div class="stage-foot"><span>拖动旋转 · 滚轮缩放 · 点击选取</span><span>单位 mm · 原始 STEP 结构件</span></div></section>
+</main>
+<footer><span>灰色结构：源文件几何　/　黄色封装：新增设计　/　电子器件：示意位置</span><span>可编辑源参数与 STEP 见同目录</span></footer>
+<section class="reference"><details><summary>模型依据与待确认项</summary><ul><li>灰色结构件直接读取提供的 12 / 32 通道 STEP；未改动原始文件。</li><li>硅胶沿主体接触面轮廓生成独立封装实体，表面平整，未添加传感点凸包；厚度与装配间隙是可修改假设。</li><li>传感器 XY 点位以提供的 CSV 为准，保留相对间距与错位，不按序号等距排列。PCB 条带随点位调整；Z、封装尺寸、插座和导线仍为示意。</li><li>这一版用于确认外形和爆炸方向。实际 PCB 外形、元件尺寸、安装位置、走线和粘接关系仍待补充。</li><li>STEP 保留实体与零件分离；Python 源文件和 parameters.json 保留本次新增结构的可修改参数。尚未在 SolidWorks 中验证，不含原生 SolidWorks 特征历史。</li></ul></details><details open><summary>CSV 原始点位（等比例、不显示编号）</summary>__COORDINATE_LAYOUT__<p>模型 X、Y 相对位置直接读取 CSV；整体仅平移，暂按 1 坐标单位 = 1 mm。Z 高度随结构曲面确定，CSV 未提供绝对安装基准与 Z 坐标。</p></details><details><summary>查看提供的 PCB 参考图</summary><img src="__PCB_IMAGE__" alt="用户提供的带 S1 至 S32 标号的 PCB 布板参考图"></details></section>
+<script>__THREE_JS__</script>
+<script id="model-data" type="application/json">__MODEL_DATA__</script>
+<script>
+(() => {
+'use strict';
+const data=JSON.parse(document.getElementById('model-data').textContent);
+const categories=[['body','结构主体','#abaea4'],['cover','第二结构件','#bfc0b6'],['silicone','硅胶封装','#e5b534'],['pcb','PCB 板（示意）','#257f65'],['sensors','传感器件（示意）','#454c52'],['connector','连接器（示意）','#e3dcca'],['wires','导线（示意）','#343d41']];
+const shown=Object.fromEntries(categories.map(x=>[x[0],true]));
+const host=document.getElementById('viewport'), labelHost=document.getElementById('labels');
+const scene=new THREE.Scene();
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});}catch(err){host.innerHTML='<div class="error">浏览器未能启动 WebGL，请使用支持硬件加速的 Chrome 或 Edge 打开。'+String(err)+'</div>';return;}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0xffffff,0);host.appendChild(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(32,1,0.1,2000);
+// CAD +Y is the roof; it maps to preview -Y. Keep that end screen-up.
+camera.up.set(0,-1,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x85877a,2.4));
+const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(-80,100,160);scene.add(key);
+const fill=new THREE.DirectionalLight(0xd5e7ff,1.5);fill.position.set(110,10,-80);scene.add(fill);
+const group=new THREE.Group();scene.add(group);
+let channel='32',parts=[],labels=[],theta=.68,phi=.24,distance=230,target=new THREE.Vector3(0,0,20),drag=null;
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+function dispose(){for(const p of parts){p.geometry.dispose();p.material.dispose();}group.clear();parts=[];labels=[];labelHost.replaceChildren();}
+function setModel(value){
+ if(!Object.prototype.hasOwnProperty.call(data,String(value)))throw new RangeError('型号必须为 12 或 32');value=String(value);
+ channel=value;dispose();const model=data[channel];
+ for(const p of model.parts){const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(p.vertices,3));geom.setIndex(p.triangles);geom.computeVertexNormals();const mesh=new THREE.Mesh(geom,new THREE.MeshStandardMaterial({color:p.color,roughness:p.category==='silicone'?.37:.57,metalness:p.category==='sensors'?.3:.04}));mesh.userData=p;parts.push(mesh);group.add(mesh);}
+ for(const c of categories){const members=parts.filter(p=>p.userData.category===c[0]);if(!members.length)continue;const box=new THREE.Box3();members.forEach(m=>{m.geometry.computeBoundingBox();box.union(m.geometry.boundingBox);});const anchor=box.getCenter(new THREE.Vector3());anchor.x=box.max.x;const el=document.createElement('div');el.className='part-label';el.textContent=c[1];labelHost.append(el);labels.push({el,anchor,category:c[0],explode:members[0].userData.explode});}
+ document.querySelectorAll('[data-model]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.model===channel)));
+ document.getElementById('model-title').textContent=channel+' 通道模块';document.getElementById('model-size').textContent='结构件 '+model.dimensions.map(n=>n.toFixed(1)).join(' × ')+' mm';
+ document.getElementById('selected').textContent='点击零件查看来源和假设。';distance=channel==='12'?245:285;theta=.78;phi=.2;update();
+}
+function update(){
+ const e=+document.getElementById('explode').value/100,opacity=+document.getElementById('opacity').value/100;
+ document.getElementById('explode-value').textContent=Math.round(e*100)+'%';document.getElementById('opacity-value').textContent=Math.round(opacity*100)+'%';
+ for(const mesh of parts){mesh.position.set(...mesh.userData.explode.map(n=>n*e));mesh.visible=shown[mesh.userData.category];if(mesh.userData.category==='silicone'){mesh.material.opacity=opacity;mesh.material.transparent=opacity<1;mesh.material.depthWrite=opacity>=1;}}
+ target.set(-9*e,12,16*e);draw();
+}
+function draw(){
+ const viewDistance=distance*Math.max(1,1.35/camera.aspect);camera.position.set(target.x+viewDistance*Math.sin(theta)*Math.cos(phi),target.y+viewDistance*Math.sin(phi),target.z+viewDistance*Math.cos(theta)*Math.cos(phi));camera.lookAt(target);camera.updateMatrixWorld();renderer.render(scene,camera);
+ const w=host.clientWidth,h=host.clientHeight,e=+document.getElementById('explode').value/100,used=[],leaders=document.getElementById('leader-lines');leaders.replaceChildren();leaders.setAttribute('viewBox','0 0 '+w+' '+h);
+ for(const l of labels){const show=document.getElementById('show-labels').checked&&shown[l.category]&&e>.1;l.el.style.display=show?'block':'none';if(!show)continue;const v=l.anchor.clone().add(new THREE.Vector3(...l.explode).multiplyScalar(e)).project(camera);const ax=(v.x*.5+.5)*w,ay=(-v.y*.5+.5)*h;let x=ax+8,y=ay;const lw=l.el.offsetWidth;x=Math.min(w-lw-18,Math.max(8,x));y=Math.min(h-60,Math.max(110,y));for(let i=0;i<10&&used.some(p=>Math.abs(p.y-y)<25&&Math.abs(p.x-x)<Math.max(lw,p.w));i++)y+=27;y=Math.min(h-58,y);used.push({x,y,w:lw});l.el.style.left=x+'px';l.el.style.top=y+'px';const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',ax);line.setAttribute('y1',ay);line.setAttribute('x2',x+10);line.setAttribute('y2',y);line.setAttribute('stroke','#899695');line.setAttribute('stroke-width','1');leaders.append(line);}
+}
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();draw();}
+for(const [id,name,color] of categories){const label=document.createElement('label');label.className='check';const input=document.createElement('input');input.type='checkbox';input.checked=true;input.dataset.category=id;input.addEventListener('change',()=>{shown[id]=input.checked;update();});const dot=document.createElement('span');dot.className='dot';dot.style.background=color;label.append(input,dot,document.createTextNode(name));document.getElementById('visibility').append(label);}
+document.querySelectorAll('[data-model]').forEach(b=>b.addEventListener('click',()=>setModel(b.dataset.model)));
+['explode','opacity'].forEach(id=>document.getElementById(id).addEventListener('input',update));document.getElementById('show-labels').addEventListener('change',draw);
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.view;theta={iso:.68,front:0,back:Math.PI,side:Math.PI/2}[v];phi=v==='iso'?.24:0;draw();}));
+host.addEventListener('pointerdown',ev=>{drag={x:ev.clientX,y:ev.clientY,startX:ev.clientX,startY:ev.clientY};host.setPointerCapture(ev.pointerId);});
+host.addEventListener('pointermove',ev=>{if(!drag)return;theta-=(ev.clientX-drag.x)*.008;phi=Math.max(-1.4,Math.min(1.4,phi+(ev.clientY-drag.y)*.008));drag.x=ev.clientX;drag.y=ev.clientY;draw();});
+host.addEventListener('pointerup',ev=>{if(drag&&Math.hypot(ev.clientX-drag.startX,ev.clientY-drag.startY)<5){const rect=host.getBoundingClientRect();pointer.set((ev.clientX-rect.left)/rect.width*2-1,-(ev.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(parts.filter(m=>m.visible));if(hits.length){const p=hits[0].object.userData;document.getElementById('selected').textContent=p.name+'：'+p.note;}}drag=null;});host.addEventListener('pointercancel',()=>drag=null);
+host.addEventListener('wheel',ev=>{ev.preventDefault();distance=Math.max(90,Math.min(500,distance*Math.exp(ev.deltaY*.001)));draw();},{passive:false});
+host.addEventListener('keydown',ev=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','='].includes(ev.key)){ev.preventDefault();if(ev.key==='ArrowLeft')theta-=.1;if(ev.key==='ArrowRight')theta+=.1;if(ev.key==='ArrowUp')phi=Math.min(1.4,phi+.1);if(ev.key==='ArrowDown')phi=Math.max(-1.4,phi-.1);if(ev.key==='+'||ev.key==='=')distance=Math.max(90,distance*.9);if(ev.key==='-')distance=Math.min(500,distance*1.1);draw();}});
+document.getElementById('save-image').addEventListener('click',()=>{draw();const out=document.createElement('canvas');out.width=renderer.domElement.width;out.height=renderer.domElement.height;const ctx=out.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,out.width,out.height);ctx.drawImage(renderer.domElement,0,0);const scale=out.width/host.clientWidth;ctx.font=(12*scale)+'px Arial, Microsoft YaHei';ctx.fillStyle='#33474b';ctx.fillText(channel+' 通道模块 · 结构讨论稿（内部示意）',20*scale,28*scale);for(const l of labels){if(l.el.style.display==='none')continue;const x=parseFloat(l.el.style.left)+10,y=parseFloat(l.el.style.top);ctx.fillStyle='#ffffff';ctx.fillRect(x*scale,(y-11)*scale,l.el.offsetWidth*scale,22*scale);ctx.fillStyle='#3b4b4f';ctx.fillText(l.el.textContent,(x+5)*scale,(y+4)*scale);}const a=document.createElement('a');a.href=out.toDataURL('image/png');a.download='gripper-'+channel+'-'+document.getElementById('explode').value+'.png';a.click();});
+new ResizeObserver(resize).observe(host);setModel(channel);resize();
+const apiState=()=>({revision:'2026-09-08-csv-relative-layout',channel,parts:parts.length,visible:parts.filter(p=>p.visible).length,explode:+document.getElementById('explode').value,renderer:renderer.info.render});
+window.gripperPreview={getState:apiState,setModel,
+ setExplode(percent){if(typeof percent!=='number'||!Number.isFinite(percent)||percent<0||percent>100)throw new RangeError('爆炸程度必须为 0–100');document.getElementById('explode').value=percent;update();return apiState();},
+ setVisibility(category,visible){if(!Object.prototype.hasOwnProperty.call(shown,category)||typeof visible!=='boolean')throw new TypeError('零件类别或显示状态无效');shown[category]=visible;document.querySelector('[data-category="'+category+'"]').checked=visible;update();return apiState();},
+ setView(view){if(!['iso','front','back','side'].includes(view))throw new RangeError('无效视角');document.querySelector('[data-view="'+view+'"]').click();return apiState();}
+};
+})();
+</script>
+</body></html>
