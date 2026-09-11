@@ -20,6 +20,7 @@
 | 系统总览与架构 | [README.md](README.md) |
 | 安装 wheel 与接口示例 | [API_AND_INTEGRATION.md](upper_pyusb_500hz/docs/API_AND_INTEGRATION.md) |
 | 二进制协议与录制格式 | [PROTOCOL_AND_RECORDING.md](upper_pyusb_500hz/docs/PROTOCOL_AND_RECORDING.md) |
+| **软件校零（tare）** | **[TARE.md](upper_pyusb_500hz/docs/TARE.md)** —— 采集前校零、原始值保留、漂移回溯 |
 | 0.3.0 交付与启动步骤 | [RELEASE_0_3_0.md](upper_pyusb_500hz/docs/RELEASE_0_3_0.md) |
 | 离线 wheel（含 PyUSB） | [upper_pyusb_500hz/wheelhouse](upper_pyusb_500hz/wheelhouse) |
 | 四板烧录选型 | [先读我_四板首次烧录.md](firmware_tactile500/先读我_四板首次烧录.md) |
