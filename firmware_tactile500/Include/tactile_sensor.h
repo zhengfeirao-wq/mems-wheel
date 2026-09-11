@@ -48,6 +48,19 @@ typedef struct
     uint8_t init_a5_rb[TACTILE_CHANNEL_COUNT];
     uint8_t init_a6_rb[TACTILE_CHANNEL_COUNT];
     uint8_t init_a7_rb[TACTILE_CHANNEL_COUNT];
+
+    /* 运行中自愈统计（v3）。
+     *   recover_attempts —— 累计"重写配置"次数
+     *   recovered_mask   —— 曾经自愈成功的通道位图
+     *   stuck_mask       —— 最近一帧仍无 fresh 的通道位图
+     *   a5_rb_latest[ch] —— 恢复时重读的 0xA5 值
+     *       读到 0x08 → 写入生效，问题在别处
+     *       读到 0x88 → 写入没生效，芯片仍在模拟输出模式
+     *       读到 0x00 → SPI 事务失败 */
+    uint32_t recover_attempts;
+    uint32_t recovered_mask;
+    uint32_t stuck_mask;
+    uint8_t a5_rb_latest[TACTILE_CHANNEL_COUNT];
 } TactileDiag;
 
 extern volatile TactileDiag g_tactile_diag;

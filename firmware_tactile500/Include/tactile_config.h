@@ -97,6 +97,17 @@
 /* 连续 N 帧 DRDY 未就绪则补触发一次，防止触发丢失后通道永久卡死。 */
 #define TACTILE_SENSOR_MISS_LIMIT    3U
 
+/* 运行中自愈（2026-09-11 v3 新增）。
+ * 背景：板载 EEPROM 里 0xA5 = 0x88（模拟输出模式，早期固件烧入）。
+ * 上电时 EEPROM 自动加载，固件再写 0xA5 = 0x08 切到命令模式。
+ * 若该写入未生效，芯片保持模拟输出模式，此时写 0x30 触发命令会被
+ * 忽略（datasheet 6.3 节 "no matter what CMD registers contents"），
+ * DRDY 永不置位 → fresh_mask 恒 0。
+ * 因此：某通道连续 N 帧 DRDY=0 时，整套重写配置并重新触发。 */
+#define TACTILE_RECOVER_AFTER_MISSES   4U
+/* 每帧最多恢复几个通道，避免恢复写入挤占 1750us 扫描预算。 */
+#define TACTILE_RECOVER_MAX_PER_FRAME  8U
+
 /* 上电首轮等待所有通道转换完成的上限（微秒）。
  * 该轮轮询会实测出真实的"触发->DRDY置位"耗时，存入诊断量。 */
 #define TACTILE_SENSOR_PRIME_TIMEOUT_US  20000U

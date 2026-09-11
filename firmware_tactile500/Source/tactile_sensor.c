@@ -137,6 +137,17 @@ static int ReadMeasurement(uint8_t channel, int16_t *temperature,
     return 1;
 }
 
+/* 写整套通道配置。初始化与运行中自愈共用同一份。 */
+static int ApplyChannelConfig(uint8_t channel)
+{
+    int ok = WriteRegister(channel, NSA_REG_INTERFACE, 0x81U);
+    ok &= WriteRegister(channel, 0xA4U, 0x00U);
+    ok &= WriteRegister(channel, 0xA5U, TACTILE_SENSOR_SYS_CONFIG);
+    ok &= WriteRegister(channel, 0xA6U, TACTILE_SENSOR_PCH_CONFIG);
+    ok &= WriteRegister(channel, 0xA7U, TACTILE_SENSOR_TCH_CONFIG);
+    return ok;
+}
+
 /* 触发一次转换并记录时刻。不等待：转换在帧间隔里自己跑完。 */
 static int TriggerConversion(uint8_t channel, uint8_t command)
 {
@@ -153,7 +164,8 @@ static int TriggerConversion(uint8_t channel, uint8_t command)
 }
 
 /* 上电首轮：触发全部通道并轮询到就绪。
- * 这一次轮询是唯一能测得"真实转换时间"的机会（之后 DRDY 读取都晚于转换结束）。 */
+ * 这一次轮询是唯一能测得"真实转换时间"的机会（之后 DRDY 读取都晚于转换结束）。
+ * v3 起对校验失败的通道也一并触发，给它们自愈机会。 */
 static void PrimeFirstConversion(void)
 {
     uint8_t channel;
@@ -163,11 +175,6 @@ static void PrimeFirstConversion(void)
 
     for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
     {
-        done[channel] = 1U;
-        if ((init_failed_mask & (UINT32_C(1) << channel)) != 0U)
-        {
-            continue;
-        }
         done[channel] = 0U;
         ++remaining;
         (void)TriggerConversion(channel, TACTILE_SENSOR_CMD_SENSOR);
@@ -218,6 +225,9 @@ void TactileSensor_Init(void)
     g_tactile_diag.full_fresh_frames = 0U;
     g_tactile_diag.drdy_misses = 0U;
     g_tactile_diag.retriggers = 0U;
+    g_tactile_diag.recover_attempts = 0U;
+    g_tactile_diag.recovered_mask = 0U;
+    g_tactile_diag.stuck_mask = 0U;
 
     for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
     {
@@ -225,6 +235,7 @@ void TactileSensor_Init(void)
         last_pressure[channel] = TACTILE_INVALID_PRESSURE;
         trigger_time_us[channel] = 0U;
         miss_count[channel] = 0U;
+        g_tactile_diag.a5_rb_latest[channel] = 0U;
         if (!WriteRegister(channel, NSA_REG_INTERFACE, 0x24U))
         {
             init_failed_mask |= UINT32_C(1) << channel;
@@ -238,17 +249,12 @@ void TactileSensor_Init(void)
         uint8_t a5_rb = 0U;
         uint8_t a6_rb = 0U;
         uint8_t a7_rb = 0U;
-        int ok = WriteRegister(channel, NSA_REG_INTERFACE, 0x81U);
-        ok &= WriteRegister(channel, 0xA4U, 0x00U);
-        /* 先关闭 DAC 连续转换，设置滤波后再启动，避免改配置打断启动。 */
-        ok &= WriteRegister(channel, 0xA5U, TACTILE_SENSOR_SYS_CONFIG);
-        ok &= WriteRegister(channel, 0xA6U, TACTILE_SENSOR_PCH_CONFIG);
-        ok &= WriteRegister(channel, 0xA7U, TACTILE_SENSOR_TCH_CONFIG);
+        int ok = ApplyChannelConfig(channel);
 
         /* 关键修正：这里原本再写一次 0xA5 = 0x88，把 bit7 DAC_on 置 1，
          * 使芯片进入 datasheet 6.3 节的 analog output mode。该模式自主转换、
          * 忽略 CMD 寄存器，且不驱动 INT/DRDY，导致 fresh_mask 恒为 0。
-         * 现在保持 TACTILE_SENSOR_SYS_CONFIG = 0x08（DAC_on = 0），
+         * 现在 TACTILE_SENSOR_SYS_CONFIG = 0x08（DAC_on = 0），
          * 改用 0x30 COMMAND 寄存器触发单次转换。 */
 
         /* 逐项回读并留存，失败时可在调试器直接比对期望值。 */
@@ -270,6 +276,28 @@ void TactileSensor_Init(void)
             init_failed_mask |= UINT32_C(1) << channel;
         }
     }
+
+    /* v3：校验失败的通道立刻完整重写一遍配置再回读，给第二次机会。
+     * 上电时 SPI 刚启用、总线状态未稳，一次失败不代表芯片有问题。 */
+    for (channel = 0U; channel < TACTILE_CHANNEL_COUNT; ++channel)
+    {
+        uint32_t mask = UINT32_C(1) << channel;
+        uint8_t rb = 0U;
+        if ((init_failed_mask & mask) == 0U)
+        {
+            continue;
+        }
+        (void)ApplyChannelConfig(channel);
+        if (ReadRegister(channel, 0xA5U, &rb))
+        {
+            g_tactile_diag.a5_rb_latest[channel] = rb;
+            g_tactile_diag.init_a5_rb[channel] = rb;
+            if (rb == TACTILE_SENSOR_SYS_CONFIG)
+            {
+                init_failed_mask &= ~mask;
+            }
+        }
+    }
     g_tactile_diag.init_fail_mask = init_failed_mask;
     /* 不再每次上电写0xAA等标定系数，也不触发0x6A/0x6C EEPROM烧写。 */
 
@@ -281,6 +309,7 @@ void TactileSensor_Collect(TactileSample *sample)
 {
     uint8_t channel;
     uint8_t command;
+    uint8_t recover_budget = TACTILE_RECOVER_MAX_PER_FRAME;
 
     sample->sample_time_us = TactileTime_NowUs();
     sample->fresh_mask = 0U;
@@ -302,10 +331,9 @@ void TactileSensor_Collect(TactileSample *sample)
             sample->status |= TACTILE_STATUS_SWEEP_LATE;
             break;
         }
-        if ((init_failed_mask & mask) != 0U)
-        {
-            continue;
-        }
+        /* v3：不再因初始化校验失败而永久跳过通道。
+         * 失败通道照常轮询，靠下面的自愈逻辑恢复。 */
+
         /* DRDY 必须在读数据之前取：读 Data_out 会自动清 DRDY。 */
         if (!ReadRegister(channel, NSA_REG_DATA_READY, &ready))
         {
@@ -315,7 +343,7 @@ void TactileSensor_Collect(TactileSample *sample)
         if ((ready & NSA_SENSOR_ERRORS) != 0U)
         {
             sample->status |= TACTILE_STATUS_SENSOR_ERROR;
-            continue;
+            /* 不 continue：错误可能是瞬时饱和，仍走下面的自愈判断。 */
         }
 
         if ((ready & NSA_DATA_READY) != 0U)
@@ -329,23 +357,46 @@ void TactileSensor_Collect(TactileSample *sample)
             }
             sample->fresh_mask |= mask;
             miss_count[channel] = 0U;
+            if ((init_failed_mask & mask) != 0U)
+            {
+                /* 实测已能正常出数，撤销初始化失败标记。 */
+                init_failed_mask &= ~mask;
+                g_tactile_diag.recovered_mask |= mask;
+            }
             /* 读完立刻触发下一轮，转换在帧间隔里跑，不占用扫描预算。 */
             (void)TriggerConversion(channel, command);
         }
         else
         {
-            /* 转换未完成。按 datasheet 6.5.1 的要求不读正在刷新的 Data_out，
-             * 保留上次数值，等下一帧。 */
+            /* DRDY 未就绪。按 datasheet 6.5.1 不读正在刷新的 Data_out。 */
             ++g_tactile_diag.drdy_misses;
-            ++miss_count[channel];
-            if (miss_count[channel] >= TACTILE_SENSOR_MISS_LIMIT)
+            if (miss_count[channel] < 255U)
             {
+                ++miss_count[channel];
+            }
+            if (miss_count[channel] >= TACTILE_RECOVER_AFTER_MISSES &&
+                recover_budget != 0U)
+            {
+                /* 自愈：整套重写配置 + 回读 0xA5 + 重新触发。
+                 * 若芯片因 0xA5 未写成功而停在模拟输出模式，这里能救回来。 */
+                uint8_t rb = 0U;
+                --recover_budget;
+                (void)ApplyChannelConfig(channel);
+                if (ReadRegister(channel, 0xA5U, &rb))
+                {
+                    g_tactile_diag.a5_rb_latest[channel] = rb;
+                    ++g_tactile_diag.retriggers;
+                }
                 (void)TriggerConversion(channel, command);
-                ++g_tactile_diag.retriggers;
+                ++g_tactile_diag.recover_attempts;
                 miss_count[channel] = 0U;
             }
         }
     }
+
+    g_tactile_diag.init_fail_mask = init_failed_mask;
+    g_tactile_diag.stuck_mask =
+        (~sample->fresh_mask) & TACTILE_CHANNEL_MASK;
 
     ++g_tactile_diag.total_frames;
     if (sample->fresh_mask == TACTILE_CHANNEL_MASK)
